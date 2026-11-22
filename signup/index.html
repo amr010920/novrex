@@ -43,6 +43,55 @@ ng\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:
     height: auto;
     display: inline-block;
 }
+.nvx-session-banner {
+    display: none;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-top: 10px;
+    color: #fff;
+    font-size: 12px;
+}
+.nvx-session-badge {
+    background: rgba(0, 162, 255, 0.25);
+    border: 1px solid #00a2ff;
+    padding: 4px 10px;
+    border-radius: 4px;
+    color: #fff;
+    font-weight: 600;
+}
+.nvx-logout-btn {
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+}
+.nvx-logout-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+.nvx-stats-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    color: #fff;
+    font-size: 12px;
+}
+.nvx-stats-pill {
+    font-weight: 600;
+}
+.nvx-stats-pill span {
+    color: #4cd964;
+    font-weight: 700;
+}
 .nvx-discord-box {
     margin-bottom: 12px;
     padding: 10px 12px;
@@ -77,9 +126,50 @@ ng\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:
     background: none;
     border: none;
 }
-.nvx-gender-active {
-    outline: 2px solid #00a2ff;
+.gender-circle {
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease, background-color 0.15s ease;
+    opacity: 0.75;
+    position: relative;
+}
+.gender-circle:hover {
+    opacity: 1;
+    transform: scale(1.06);
+}
+.gender-circle .nvx-gender-icon {
+    display: none;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 17px;
+    color: #ffffff;
     border-radius: 50%;
+}
+.gender-circle.selected-gender,
+.gender-circle.nvx-gender-active {
+    opacity: 1;
+    transform: scale(1.1);
+    box-shadow: 0 0 0 3px #00a2ff, 0 0 10px rgba(0, 162, 255, 0.85);
+    border-radius: 50%;
+    filter: brightness(1.15);
+}
+.gender-circle.selected-gender .cover-sprite,
+.gender-circle.nvx-gender-active .cover-sprite {
+    display: none;
+}
+.gender-circle.selected-gender .nvx-gender-icon,
+.gender-circle.nvx-gender-active .nvx-gender-icon {
+    display: flex;
+}
+#FemaleButton.selected-gender,
+#FemaleButton.nvx-gender-active {
+    background-color: #e91e63;
+}
+#MaleButton.selected-gender,
+#MaleButton.nvx-gender-active {
+    background-color: #00a2ff;
 }
 .nvx-signup-locked {
     opacity: 0.55;
@@ -125,12 +215,17 @@ ng\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:
                         </div>
 
                         <div id="login-container" class="col-md-5 landing-login">
+                            <div id="nvx-session-banner" class="nvx-session-banner">
+                                <span id="nvx-session-badge" class="nvx-session-badge"></span>
+                                <button type="button" id="nvx-cookie-logout-btn" class="nvx-logout-btn">Log Out</button>
+                            </div>
+
                             <div id="LandingNavbar" class="collapse mobile-login">
                                 <div class="login-container">
                                     <div class="login-form-container">
                                         <form class="login-form" role="form" name="loginForm">
                                             <div class="form-group username-form-group">
-                                                <input id="login-username" name="username" class="form-control input-field" placeholder="Username/Email/Phone">
+                                                <input id="login-username" name="username" class="form-control input-field" placeholder="Username">
                                             </div>
                                             <div class="form-group password-form-group">
                                                 <input id="login-password" name="password" type="password" class="form-control input-field" placeholder="Password">
@@ -151,7 +246,7 @@ ng\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:
                                 <div class="horizontal-login-form">
                                     <form class="login-form" role="form" name="horizontalLoginForm">
                                         <div class="form-group username-form-group">
-                                            <input id="horizontal-login-username" name="username" class="form-control" placeholder="Username/Email/Phone" autofocus>
+                                            <input id="horizontal-login-username" name="username" class="form-control" placeholder="Username" autofocus>
                                         </div>
                                         <div class="form-group password-form-group">
                                             <input id="horizontal-login-password" name="password" type="password" class="form-control" placeholder="Password">
@@ -163,6 +258,7 @@ ng\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:
                                     <div class="forgot-credentials-link">
                                         <a id="horizontal-forgot-credentials-link" class="text-link" href="https://novrex.lol/login/forgot-password-or-username">Forgot Password or Username?</a>
                                     </div>
+                                    <div id="nvx-login-feedback" class="nvx-status-msg" style="text-align:left; margin-top:4px;"></div>
                                 </div>
                             </div>
                         </div>
@@ -197,6 +293,11 @@ ng\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:
                                         <h3 class="text-center signup-header">Sign up and start having fun!</h3>
                                         <div class="signup-or-log-in new-username-pwd-rule">
                                             <div class="signup-container">
+                                                <div class="nvx-stats-bar">
+                                                    <div class="nvx-stats-pill">Accounts: <span id="nvx-total-accounts">--</span></div>
+                                                    <div class="nvx-stats-pill">Next ID: <span id="nvx-next-id">#--</span></div>
+                                                </div>
+
                                                 <div id="nvx-discord-gate" class="nvx-discord-box">
                                                     <div id="nvx-discord-status">Authorize with Discord to unlock Novrex sign up.</div>
                                                     <button type="button" id="nvx-discord-login-btn" class="nvx-discord-btn">Authorize with Discord</button>
@@ -240,7 +341,8 @@ ng\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:
                                                                 <div class="rbx-select-group year last">
                                                                     <select class="input-field rbx-select" id="YearDropdown" tabindex="1" name="birthdayYear">
                                                                         <option value="" disabled selected>Year</option>
-                                                                         <option value="2013">2013</option><option value="2012">2012</option><option value="2011">2011</option>
+                                                                        <option value="2020">2020</option><option value="2019">2019</option><option value="2018">2018</option><option value="2017">2017</option><option value="2016">2016</option>
+                                                                        <option value="2015">2015</option><option value="2014">2014</option><option value="2013">2013</option><option value="2012">2012</option><option value="2011">2011</option>
                                                                         <option value="2010">2010</option><option value="2009">2009</option><option value="2008">2008</option><option value="2007">2007</option><option value="2006">2006</option>
                                                                         <option value="2005">2005</option><option value="2004">2004</option><option value="2003">2003</option><option value="2002">2002</option><option value="2001">2001</option>
                                                                         <option value="2000">2000</option><option value="1999">1999</option><option value="1998">1998</option><option value="1997">1997</option><option value="1996">1996</option>
@@ -267,11 +369,13 @@ ng\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:
                                                         <div class="form-group">
                                                             <div class="form-control fake-input-lg">
                                                                 <label>Gender</label>
-                                                                <div id="FemaleButton" class="gender-circle" tabindex="7" name="genderFemale" role="button">
+                                                                <div id="FemaleButton" class="gender-circle" tabindex="7" name="genderFemale" role="button" title="Female">
                                                                     <div class="cover-sprite gender female"></div>
+                                                                    <span class="nvx-gender-icon">♀</span>
                                                                 </div>
-                                                                <div id="MaleButton" class="gender-circle" tabindex="8" name="genderMale" role="button">
+                                                                <div id="MaleButton" class="gender-circle" tabindex="8" name="genderMale" role="button" title="Male">
                                                                     <div class="cover-sprite gender male"></div>
+                                                                    <span class="nvx-gender-icon">♂</span>
                                                                 </div>
                                                             </div>
                                                             <p id="signup-GenderInputValidation" class="form-control-label input-validation text-error"></p>
@@ -341,7 +445,7 @@ ng\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:
                         <li><a class="app-store-link-android" href="https://play.google.com/store/apps/details?id=com.roblox.client&amp;hl=en"><span class="app-store-logo android android-logo" title="Get it on Google Play"></span></a></li>
                         <li><a class="app-store-link-amazon" href="http://amzn.com/B00NUF4YOA"><span class="app-store-logo amazon-logo" title="Novrex on Amazon Store"></span></a></li>
                         <li><a class="app-store-link-xbox" href="https://www.microsoft.com/en-us/p/roblox/bq1tn1t79v9k"><span class="app-store-logo xbox-logo" title="Novrex on Xbox Store"></span></a></li>
-                        <li><a class="app-store-link-windows" href="../sorry"><span class="app-store-logo win-logo" title="Novrex on Windows Store"></span></a></li>
+                        <li><a class="app-store-link-windows" href="https://www.microsoft.com/en-us/store/games/roblox/9nblgggzm6wm"><span class="app-store-logo win-logo" title="Novrex on Windows Store"></span></a></li>
                     </ul>
                 </section>
             </div>
@@ -390,8 +494,9 @@ ng\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:
 (function () {
     const SUPABASE_URL = "https://vzkupnfktlyjmhjgzfli.supabase.co";
     const SUPABASE_KEY = "sb_publishable_I0BgbGkSpxoerOsrnVNvhw_w_s7YP6u";
-    const DISCORD_CLIENT_ID = "1574061142081540217";
+    const DISCORD_CLIENT_ID = "PASTE_YOUR_DISCORD_CLIENT_ID_HERE";
     const REDIRECT_URL = "https://novrex.lol";
+    const COOKIE_NAME = "nvx_session";
 
     const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
@@ -402,10 +507,71 @@ ng\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:
     const feedbackEl = document.getElementById("nvx-signup-feedback");
     const femaleBtn = document.getElementById("FemaleButton");
     const maleBtn = document.getElementById("MaleButton");
+    const totalAccountsEl = document.getElementById("nvx-total-accounts");
+    const nextIdEl = document.getElementById("nvx-next-id");
+    const sessionBanner = document.getElementById("nvx-session-banner");
+    const sessionBadge = document.getElementById("nvx-session-badge");
+    const cookieLogoutBtn = document.getElementById("nvx-cookie-logout-btn");
+    const loginFeedbackEl = document.getElementById("nvx-login-feedback");
+    const horizontalLoginForm = document.querySelector('form[name="horizontalLoginForm"]');
+    const mobileLoginForm = document.querySelector('form[name="loginForm"]');
 
     let discordUser = null;
     let selectedGender = null;
     let isSubmitting = false;
+
+    function setNovrexCookie(accountData, days = 30) {
+        const expires = new Date(Date.now() + days * 86400000).toUTCString();
+        const encoded = encodeURIComponent(JSON.stringify(accountData));
+        const secure = window.location.protocol === "https:" ? "; Secure" : "";
+        document.cookie = `${COOKIE_NAME}=${encoded}; expires=${expires}; path=/; SameSite=Lax${secure}`;
+    }
+
+    function getNovrexCookie() {
+        const parts = document.cookie ? document.cookie.split("; ") : [];
+        for (const part of parts) {
+            const eq = part.indexOf("=");
+            if (eq === -1) continue;
+            const key = part.slice(0, eq);
+            if (key === COOKIE_NAME) {
+                try {
+                    return JSON.parse(decodeURIComponent(part.slice(eq + 1)));
+                } catch (_e) {
+                    return null;
+                }
+            }
+        }
+        return null;
+    }
+
+    function clearNovrexCookie() {
+        const secure = window.location.protocol === "https:" ? "; Secure" : "";
+        document.cookie = `${COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax${secure}`;
+    }
+
+    function renderSessionCookieUI() {
+        const acct = getNovrexCookie();
+        if (acct && acct.username) {
+            sessionBadge.textContent = `${acct.username} (#${acct.id})`;
+            sessionBanner.style.display = "flex";
+            if (horizontalLoginForm) horizontalLoginForm.style.display = "none";
+        } else {
+            sessionBanner.style.display = "none";
+            if (horizontalLoginForm) horizontalLoginForm.style.display = "";
+        }
+    }
+
+    async function refreshAccountStats() {
+        if (!sb) return;
+        const { data, error } = await sb.rpc("get_novrex_id_stats");
+        if (error) return;
+        const row = Array.isArray(data) ? data[0] : data;
+        if (!row) return;
+        const total = Number(row.total_users ?? 0);
+        const nextId = Number(row.next_id ?? (total + 1));
+        totalAccountsEl.textContent = String(total);
+        nextIdEl.textContent = "#" + String(nextId);
+    }
 
     function updateGateUI(user) {
         discordUser = user;
@@ -453,9 +619,9 @@ ng\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:
 
     function selectGender(gender, el) {
         selectedGender = gender;
-        femaleBtn.classList.remove("nvx-gender-active");
-        maleBtn.classList.remove("nvx-gender-active");
-        if (el) el.classList.add("nvx-gender-active");
+        femaleBtn.classList.remove("selected-gender", "nvx-gender-active");
+        maleBtn.classList.remove("selected-gender", "nvx-gender-active");
+        if (el) el.classList.add("selected-gender", "nvx-gender-active");
         document.getElementById("signup-GenderInputValidation").textContent = "";
     }
 
@@ -481,6 +647,77 @@ ng\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:
         updateGateUI(null);
         feedbackEl.textContent = "";
     });
+
+    cookieLogoutBtn.addEventListener("click", function () {
+        clearNovrexCookie();
+        renderSessionCookieUI();
+        if (loginFeedbackEl) {
+            loginFeedbackEl.style.color = "#d6daff";
+            loginFeedbackEl.textContent = "Logged out.";
+        }
+    });
+
+    async function handleLoginSubmit(usernameInput, passwordInput, errorEl) {
+        const username = (usernameInput?.value || "").trim();
+        const password = passwordInput?.value || "";
+        if (errorEl) errorEl.textContent = "";
+        if (loginFeedbackEl) loginFeedbackEl.textContent = "";
+
+        if (!username || !password) {
+            const msg = "Enter username and password.";
+            if (errorEl) errorEl.textContent = msg;
+            if (loginFeedbackEl) { loginFeedbackEl.style.color = "#ff6b6b"; loginFeedbackEl.textContent = msg; }
+            return;
+        }
+        if (!sb) return;
+
+        const passwordHash = await sha256Hex(password);
+        const { data, error } = await sb
+            .from("novrex_users")
+            .select("id, username, discord_username, password_hash")
+            .eq("username", username)
+            .maybeSingle();
+
+        if (error || !data || data.password_hash !== passwordHash) {
+            const msg = "Invalid username or password.";
+            if (errorEl) errorEl.textContent = msg;
+            if (loginFeedbackEl) { loginFeedbackEl.style.color = "#ff6b6b"; loginFeedbackEl.textContent = msg; }
+            return;
+        }
+
+        setNovrexCookie({
+            id: data.id,
+            username: data.username,
+            discord_username: data.discord_username || ""
+        });
+        renderSessionCookieUI();
+        if (loginFeedbackEl) {
+            loginFeedbackEl.style.color = "#4cd964";
+            loginFeedbackEl.textContent = `Logged in as ${data.username} (#${data.id}).`;
+        }
+    }
+
+    if (horizontalLoginForm) {
+        horizontalLoginForm.addEventListener("submit", async function (e) {
+            e.preventDefault();
+            await handleLoginSubmit(
+                document.getElementById("horizontal-login-username"),
+                document.getElementById("horizontal-login-password"),
+                null
+            );
+        });
+    }
+
+    if (mobileLoginForm) {
+        mobileLoginForm.addEventListener("submit", async function (e) {
+            e.preventDefault();
+            await handleLoginSubmit(
+                document.getElementById("login-username"),
+                document.getElementById("login-password"),
+                mobileLoginForm.querySelector(".login-error")
+            );
+        });
+    }
 
     signupBtn.addEventListener("click", async function () {
         if (isSubmitting) return;
@@ -518,15 +755,16 @@ ng\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:
 
         const birthday = year + "-" + month + "-" + day;
         const passwordHash = await sha256Hex(password);
+        const discordHandle = discordUser.username || discordUser.global_name || "Discord User";
 
-        const { error } = await sb.from("novrex_users").insert({
+        const { data, error } = await sb.from("novrex_users").insert({
             discord_id: String(discordUser.id),
-            discord_username: discordUser.username || discordUser.global_name || "Discord User",
+            discord_username: discordHandle,
             username: username,
             password_hash: passwordHash,
             birthday: birthday,
             gender: selectedGender
-        });
+        }).select("id, username, discord_username").single();
 
         isSubmitting = false;
         signupBtn.textContent = "Sign Up";
@@ -540,8 +778,16 @@ ng\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:
             return;
         }
 
+        setNovrexCookie({
+            id: data.id,
+            username: data.username,
+            discord_username: data.discord_username || discordHandle
+        });
+        renderSessionCookieUI();
+
         feedbackEl.style.color = "#4cd964";
-        feedbackEl.textContent = "Welcome to Novrex, " + username + "! Your account has been created.";
+        feedbackEl.textContent = "Welcome to Novrex, " + username + "! Your Novrex ID is #" + data.id + ".";
+        refreshAccountStats();
     });
 
     const cached = sessionStorage.getItem("nvx_discord_user");
@@ -551,6 +797,8 @@ ng\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:
         } catch (_e) {}
     }
     loadDiscordUserFromHash();
+    renderSessionCookieUI();
+    refreshAccountStats();
 })();
 </script>
 </body>
