@@ -2,7 +2,7 @@
 <html lang="en">
 <head data-machine-id="WEB470">
 <style type="text/css">
-[uib-tooltip-popup].tooltip.top-left > .tooltip-arrow,[uib-tooltip-popup].tooltip.top-right > .tooltip-arrow,[uib-tooltip-popup].tooltip.bottom-left > .tooltip-arrow,[uib-tooltip-popup].tooltip.bottom-right > .tooltip-arrow,[uib-tooltip-popup].tooltip.left-top > .tooltip-arrow,[uib-tooltip-popup].tooltip.left-bottom > .tooltip-arrow,[uib-tooltip-popup].tooltip.right-top > .tooltip-arrow,[uib-tooltip-popup].tooltip.right-bottom > .tooltip-arrow,[uib-tooltip-html-popup].tooltip.top-left > .arrow,[uib-tooltip-html-popup].tooltip.top-right > .arrow,[uib-tooltip-html-popup].tooltip.bottom-left > .arrow,[uib-tooltip-html-popup].tooltip.bottom-right > .arrow,[uib-tooltip-html-popup].tooltip.left-top > .arrow,[uib-tooltip-html-popup].tooltip.left-bottom > .arrow,[uib-tooltip-html-popup].tooltip.right-top > .arrow,[uib-tooltip-html-popup].tooltip.right-bottom > .arrow,[uib-tooltip-template-popup].tooltip.top-left > .arrow,[uib-tooltip-template-popup].tooltip.top-right > .arrow,[uib-tooltip-template-popup].tooltip.bottom-left > .arrow,[uib-tooltip-template-popup].tooltip.bottom-right > .arrow,[uib-tooltip-template-popup].tooltip.left-top > .arrow,[uib-tooltip-template-popup].tooltip.left-bottom > .arrow,[uib-tooltip-template-popup].tooltip.right-top > .arrow,[uib-tooltip-template-popup].tooltip.right-bottom > .arrow,[uib-popover-popup].popover.top-left > .arrow,[uib-popover-popup].popover.top-right > .arrow,[uib-popover-popup].popover.bottom-left > .arrow,[uib-popover-popup].popover.bottom-right > .arrow,[uib-popover-popup].popover.left-top > .arrow,[uib-popover-popup].popover.left-bottom > .arrow,[uib-popover-popup].popover.right-top > .arrow,[uib-popover-popup].popover.right-bottom > .arrow,[uib-popover-html-popup].popover.top-left > .arrow,[uib-popover-html-popup].popover.top-right > .arrow,[uib-popover-html-popup].popover.bottom-left > .arrow,[uib-popover-html-popup].popover.bottom-right > .arrow,[uib-popover-html-popup].popover.left-top > .arrow,[uib-popover-html-popup].popover.left-bottom > .arrow,[uib-popover-html-popup].popover.right-top > .arrow,[uib-popover-html-popup].popover.right-bottom > .arrow,[uib-popover-template-popup].popover.top-left > .arrow,[uib-popover-template-popup].popover.top-right > .arrow,[uib-popover-template-popup].popover.bottom-left > .arrow,[uib-popover-template-popup].popover.bottom-right > .arrow,[uib-popover-template-popup].popover.left-top > .arrow,[uib-popover-template-popup].popover.left-bottom > .arrow,[uib-popover-template-popup].popover.right-top > .arrow,[uib-popover-template-popup].popover.right-bottom > .arrow{top:auto;bottom:auto;left:auto;right:auto;margin:0;}
+[uib-tooltip-popup].tooltip.top-left > .tooltip-arrow,[uib-tooltip-popup].tooltip.top-right > .tooltip-arrow,[uib-tooltip-popup].tooltip.bottom-left > .tooltip-arrow,[uib-tooltip-popup].tooltip.bottom-right > .tooltip-arrow,[uib-tooltip-popup].tooltip.left-top > .tooltip-arrow,[uib-tooltip-popup].tooltip.left-bottom > .tooltip-arrow,[uib-tooltip-popup].tooltip.right-top > .tooltip-arrow,[uib-tooltip-popup].tooltip.right-bottom > .tooltip-arrow,[uib-popover-popup].popover.top-left > .arrow,[uib-popover-popup].popover.top-right > .arrow,[uib-popover-popup].popover.bottom-left > .arrow,[uib-popover-popup].popover.bottom-right > .arrow,[uib-popover-popup].popover.left-top > .arrow,[uib-popover-popup].popover.left-bottom > .arrow,[uib-popover-popup].popover.right-top > .arrow,[uib-popover-popup].popover.right-bottom > .arrow,[uib-popover-html-popup].popover.top-left > .arrow,[uib-popover-html-popup].popover.top-right > .arrow,[uib-popover-html-popup].popover.bottom-left > .arrow,[uib-popover-html-popup].popover.bottom-right > .arrow,[uib-popover-html-popup].popover.left-top > .arrow,[uib-popover-html-popup].popover.left-bottom > .arrow,[uib-popover-html-popup].popover.right-top > .arrow,[uib-popover-html-popup].popover.right-bottom > .arrow,[uib-popover-template-popup].popover.top-left > .arrow,[uib-popover-template-popup].popover.top-right > .arrow,[uib-popover-template-popup].popover.bottom-left > .arrow,[uib-popover-template-popup].popover.bottom-right > .arrow,[uib-popover-template-popup].popover.left-top > .arrow,[uib-popover-template-popup].popover.left-bottom > .arrow,[uib-popover-template-popup].popover.right-top > .arrow,[uib-popover-template-popup].popover.right-bottom > .arrow{top:auto;bottom:auto;left:auto;right:auto;margin:0;}
 [uib-popover-popup].popover,[uib-popover-html-popup].popover,[uib-popover-template-popup].popover{display:block !important;}
 .uib-position-measure{display:block !important;visibility:hidden !important;position:absolute !important;top:-9999px !important;left:-9999px !important;}
 .uib-position-scrollbar-measure{position:absolute !important;top:-9999px !important;width:50px !important;height:50px !important;overflow:scroll !important;}
@@ -391,7 +391,7 @@ ng\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:
 (function () {
     const SUPABASE_URL = "https://vzkupnfktlyjmhjgzfli.supabase.co";
     const SUPABASE_KEY = "sb_publishable_I0BgbGkSpxoerOsrnVNvhw_w_s7YP6u";
-    const DISCORD_CLIENT_ID = "1574061142081540217";
+    const DISCORD_CLIENT_ID = "PASTE_YOUR_DISCORD_CLIENT_ID_HERE";
     const REDIRECT_URL = "https://novrex.lol";
 
     const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
@@ -520,14 +520,14 @@ ng\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:
         const birthday = year + "-" + month + "-" + day;
         const passwordHash = await sha256Hex(password);
 
-        const { data, error } = await sb.from("novrex_users").insert({
+        const { error } = await sb.from("novrex_users").insert({
             discord_id: String(discordUser.id),
             discord_username: discordUser.username || discordUser.global_name || "Discord User",
             username: username,
             password_hash: passwordHash,
             birthday: birthday,
             gender: selectedGender
-        }).select("id").single();
+        });
 
         isSubmitting = false;
         signupBtn.textContent = "Sign Up";
@@ -542,7 +542,7 @@ ng\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:
         }
 
         feedbackEl.style.color = "#4cd964";
-        feedbackEl.textContent = "Welcome to Novrex, " + username + "! Your Novrex ID is #" + data.id + ".";
+        feedbackEl.textContent = "Welcome to Novrex, " + username + "! Your account has been created.";
     });
 
     const cached = sessionStorage.getItem("nvx_discord_user");
