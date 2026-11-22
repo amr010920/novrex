@@ -72,26 +72,6 @@ ng\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:
 .nvx-logout-btn:hover {
     background: rgba(255, 255, 255, 0.25);
 }
-.nvx-stats-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 10px;
-    padding: 8px 12px;
-    border-radius: 6px;
-    background: rgba(0, 0, 0, 0.55);
-    border: 1px solid rgba(255, 255, 255, 0.22);
-    color: #fff;
-    font-size: 12px;
-}
-.nvx-stats-pill {
-    font-weight: 600;
-}
-.nvx-stats-pill span {
-    color: #4cd964;
-    font-weight: 700;
-}
 .nvx-discord-box {
     margin-bottom: 12px;
     padding: 10px 12px;
@@ -136,6 +116,14 @@ ng\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:
     opacity: 1;
     transform: scale(1.06);
 }
+.gender-circle.selected-gender,
+.gender-circle.nvx-gender-active {
+    opacity: 1;
+    transform: scale(1.1);
+    box-shadow: 0 0 0 3px #00a2ff, 0 0 10px rgba(0, 162, 255, 0.85);
+    border-radius: 50%;
+    filter: brightness(1.15);
+}
 .gender-circle .nvx-gender-icon {
     display: none;
     width: 100%;
@@ -146,14 +134,6 @@ ng\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:
     font-size: 17px;
     color: #ffffff;
     border-radius: 50%;
-}
-.gender-circle.selected-gender,
-.gender-circle.nvx-gender-active {
-    opacity: 1;
-    transform: scale(1.1);
-    box-shadow: 0 0 0 3px #00a2ff, 0 0 10px rgba(0, 162, 255, 0.85);
-    border-radius: 50%;
-    filter: brightness(1.15);
 }
 .gender-circle.selected-gender .cover-sprite,
 .gender-circle.nvx-gender-active .cover-sprite {
@@ -293,11 +273,6 @@ ng\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:
                                         <h3 class="text-center signup-header">Sign up and start having fun!</h3>
                                         <div class="signup-or-log-in new-username-pwd-rule">
                                             <div class="signup-container">
-                                                <div class="nvx-stats-bar">
-                                                    <div class="nvx-stats-pill">Accounts: <span id="nvx-total-accounts">--</span></div>
-                                                    <div class="nvx-stats-pill">Next ID: <span id="nvx-next-id">#--</span></div>
-                                                </div>
-
                                                 <div id="nvx-discord-gate" class="nvx-discord-box">
                                                     <div id="nvx-discord-status">Authorize with Discord to unlock Novrex sign up.</div>
                                                     <button type="button" id="nvx-discord-login-btn" class="nvx-discord-btn">Authorize with Discord</button>
@@ -507,8 +482,6 @@ ng\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:
     const feedbackEl = document.getElementById("nvx-signup-feedback");
     const femaleBtn = document.getElementById("FemaleButton");
     const maleBtn = document.getElementById("MaleButton");
-    const totalAccountsEl = document.getElementById("nvx-total-accounts");
-    const nextIdEl = document.getElementById("nvx-next-id");
     const sessionBanner = document.getElementById("nvx-session-banner");
     const sessionBadge = document.getElementById("nvx-session-badge");
     const cookieLogoutBtn = document.getElementById("nvx-cookie-logout-btn");
@@ -559,18 +532,6 @@ ng\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:
             sessionBanner.style.display = "none";
             if (horizontalLoginForm) horizontalLoginForm.style.display = "";
         }
-    }
-
-    async function refreshAccountStats() {
-        if (!sb) return;
-        const { data, error } = await sb.rpc("get_novrex_id_stats");
-        if (error) return;
-        const row = Array.isArray(data) ? data[0] : data;
-        if (!row) return;
-        const total = Number(row.total_users ?? 0);
-        const nextId = Number(row.next_id ?? (total + 1));
-        totalAccountsEl.textContent = String(total);
-        nextIdEl.textContent = "#" + String(nextId);
     }
 
     function updateGateUI(user) {
@@ -785,9 +746,6 @@ ng\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:
         });
         renderSessionCookieUI();
 
-        feedbackEl.style.color = "#4cd964";
-        feedbackEl.textContent = "Welcome to Novrex, " + username + "! Your Novrex ID is #" + data.id + ".";
-        refreshAccountStats();
     });
 
     const cached = sessionStorage.getItem("nvx_discord_user");
@@ -798,7 +756,6 @@ ng\:form{display:block;}.ng-animate-shim{visibility:hidden;}.ng-anchor{position:
     }
     loadDiscordUserFromHash();
     renderSessionCookieUI();
-    refreshAccountStats();
 })();
 </script>
 </body>
