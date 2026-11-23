@@ -1,355 +1,350 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
+  <title>Avatar - Roblox</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,requiresActiveX=true" />
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Novrex Avatar Editor</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="user-data" data-userid="1" data-name="NovrexUser" data-displayname="NovrexUser" />
+  <link rel="stylesheet" data-bundlename="StyleGuide" href="https://css.rbxcdn.com/09505554a40f76a420edee7341587691b49c6cfede7ba183b5fc3177a922cd95.css" />
+  <link rel="stylesheet" data-bundlename="Navigation" href="https://css.rbxcdn.com/49c237ffce3f7e242a26d9e334d30d5f539e4737b6c59576ee2f28ab4697d61a.css" />
+  <link rel="stylesheet" data-bundlename="Footer" href="https://css.rbxcdn.com/55b250e8473888792f885d898973a13692fb22157baf61aaffa62ce4545f3408.css" />
+  <link rel="stylesheet" href="https://static.rbxcdn.com/css/leanbase___3678d89e5ec3f4d8c65d863691f31de2_m.css/fetch" />
+  <link rel="stylesheet" href="https://static.rbxcdn.com/css/page___35336144d22fbc9d8458410c928c5780_m.css/fetch" />
+  <link rel="stylesheet" data-bundlename="Avatar" href="https://css.rbxcdn.com/43246eb063d4fce7f3f28a2c6d167e33c7ecc50cf90dec5888d84a4923e7f243.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    * {
-      box-sizing: border-box;
+    .nvx-avatar-page {
+      padding: 16px 0 36px 0;
     }
-    body {
-      margin: 0;
-      padding: 24px;
-      font-family: Arial, Helvetica, sans-serif;
-      background: #e3e5e8;
-      color: #191919;
-    }
-    #avatar-container {
-      max-width: 1040px;
-      margin: 0 auto;
-      background: #ffffff;
-      border: 1px solid #c7c9cc;
-      border-radius: 4px;
-      padding: 20px;
-    }
-    .editor-header {
+    .nvx-topbar {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      border-bottom: 1px solid #d9dadb;
-      padding-bottom: 14px;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
     }
-    .editor-title {
+    .nvx-topbar h1 {
       margin: 0;
-      font-size: 22px;
+      font-size: 26px;
       font-weight: 700;
+      color: #191919;
     }
-    .user-controls {
+    .nvx-controls-bar {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       gap: 10px;
     }
-    .user-controls label {
+    .nvx-controls-bar label {
       font-size: 13px;
       font-weight: 700;
+      color: #393b3d;
     }
-    .user-controls input,
-    .user-controls select {
-      padding: 6px 10px;
+    .nvx-controls-bar input,
+    .nvx-controls-bar select {
+      height: 32px;
+      padding: 4px 10px;
       border: 1px solid #b8babc;
       border-radius: 3px;
-      font-size: 13px;
       background: #ffffff;
+      color: #191919;
+      font-size: 13px;
     }
-    .editor-grid {
+    .nvx-layout {
       display: grid;
-      grid-template-columns: 300px 1fr;
-      gap: 20px;
+      grid-template-columns: 340px 1fr;
+      gap: 18px;
       align-items: start;
     }
-    @media (max-width: 780px) {
-      .editor-grid {
+    @media (max-width: 860px) {
+      .nvx-layout {
         grid-template-columns: 1fr;
       }
     }
-    .stage-panel {
-      background: #f2f4f5;
+    .nvx-card {
+      background: #ffffff;
       border: 1px solid #d0d3d6;
-      border-radius: 4px;
+      border-radius: 3px;
       padding: 16px;
-      text-align: center;
     }
     #avatar-full-player {
       position: relative;
-      width: 240px;
-      height: 320px;
-      margin: 0 auto 14px auto;
-      background: #ffffff;
-      border: 1px solid #dfe2e5;
-      border-radius: 4px;
-    }
-    #avatar-full-player .noob-part {
-      position: absolute;
+      width: 100%;
+      height: 360px;
       border-radius: 3px;
-      border: 1px solid rgba(0, 0, 0, 0.14);
+      background: linear-gradient(180deg, #e7edf2 0%, #d4dde5 100%);
+      border: 1px solid #c5ccd2;
+      overflow: hidden;
+      cursor: grab;
     }
-    #avatar-full-player .noob-part[data-part="Head"] {
-      width: 56px;
-      height: 56px;
-      top: 12px;
-      left: 92px;
-      background: #F5CD30;
+    #avatar-full-player:active {
+      cursor: grabbing;
     }
-    #avatar-full-player .noob-part[data-part="Torso"] {
-      width: 84px;
-      height: 84px;
-      top: 74px;
-      left: 78px;
-      background: #0D69AB;
-    }
-    #avatar-full-player .noob-part[data-part="LeftArm"] {
-      width: 40px;
-      height: 84px;
-      top: 74px;
-      left: 32px;
-      background: #F5CD30;
-    }
-    #avatar-full-player .noob-part[data-part="RightArm"] {
-      width: 40px;
-      height: 84px;
-      top: 74px;
-      left: 168px;
-      background: #F5CD30;
-    }
-    #avatar-full-player .noob-part[data-part="LeftLeg"] {
-      width: 40px;
-      height: 84px;
-      top: 164px;
-      left: 78px;
-      background: #4B974B;
-    }
-    #avatar-full-player .noob-part[data-part="RightLeg"] {
-      width: 40px;
-      height: 84px;
-      top: 164px;
-      left: 122px;
-      background: #4B974B;
-    }
-    #avatar-equipped-layers {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-    }
-    .avatar-full-layer {
-      position: absolute;
-      inset: 0;
+    #avatar-full-player canvas {
+      display: block;
       width: 100%;
       height: 100%;
-      object-fit: contain;
     }
-    .stage-actions {
+    .nvx-stage-hint {
+      margin-top: 8px;
+      font-size: 11px;
+      color: #65686b;
+      text-align: center;
+    }
+    .nvx-actions {
       display: flex;
       gap: 8px;
-      justify-content: center;
-      margin-bottom: 10px;
+      margin-top: 12px;
     }
-    button {
-      cursor: pointer;
+    .nvx-btn {
+      height: 34px;
+      padding: 0 14px;
+      border-radius: 3px;
       border: 1px solid #0074bd;
       background: #0084d6;
       color: #ffffff;
-      font-weight: 700;
       font-size: 13px;
-      padding: 8px 14px;
-      border-radius: 3px;
+      font-weight: 700;
+      cursor: pointer;
     }
-    button:hover {
+    .nvx-btn:hover {
       background: #006fb3;
     }
-    button.secondary {
+    .nvx-btn-light {
       background: #ffffff;
       color: #191919;
       border-color: #b8babc;
     }
-    button.secondary:hover {
-      background: #f0f1f2;
+    .nvx-btn-light:hover {
+      background: #f2f4f5;
     }
     #avatar-save-status {
-      font-size: 13px;
+      margin-top: 10px;
+      font-size: 12px;
       font-weight: 700;
       color: #393b3d;
       min-height: 18px;
     }
-    .render-previews {
+    .nvx-renders-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
       margin-top: 14px;
       padding-top: 14px;
-      border-top: 1px solid #d9dadb;
+      border-top: 1px solid #e1e4e8;
     }
-    .preview-box {
-      background: #ffffff;
+    .nvx-render-box {
       border: 1px solid #d5d8db;
       border-radius: 3px;
       padding: 8px;
+      background: #f8f9fa;
+      text-align: center;
     }
-    .preview-box span {
-      display: block;
+    .nvx-render-box div {
       font-size: 11px;
       font-weight: 700;
+      color: #55585c;
       margin-bottom: 6px;
-      color: #555;
     }
-    .preview-box img {
+    .nvx-render-box img {
       width: 100%;
       aspect-ratio: 1 / 1;
       object-fit: contain;
-      background: #f7f8f9;
+      background: #ffffff;
+      border: 1px solid #e3e6e8;
       display: block;
     }
-    .catalog-panel {
-      min-width: 0;
-    }
-    .category-tabs {
+    .nvx-tabs {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e1e4e8;
       margin-bottom: 14px;
     }
-    .category-tab {
+    .nvx-tab {
+      height: 32px;
+      padding: 0 12px;
+      border-radius: 3px;
+      border: 1px solid #c7c9cc;
       background: #f2f4f5;
       color: #191919;
-      border-color: #c7c9cc;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
     }
-    .category-tab.active {
+    .nvx-tab.active {
       background: #0084d6;
-      color: #ffffff;
       border-color: #0074bd;
+      color: #ffffff;
     }
-    .section-heading {
+    .nvx-section-title {
       font-size: 15px;
       font-weight: 700;
-      margin: 14px 0 10px 0;
+      margin: 0 0 10px 0;
+      color: #191919;
     }
-    .equipped-list {
+    .nvx-equipped-row {
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
       margin-bottom: 16px;
     }
-    .equipped-chip {
+    .nvx-chip {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: #eef6fc;
-      border: 1px solid #8ec5eb;
-      border-radius: 3px;
       padding: 6px 10px;
+      border-radius: 3px;
+      border: 1px solid #8ec5eb;
+      background: #eef6fc;
       font-size: 12px;
       font-weight: 700;
     }
-    .equipped-chip button {
+    .nvx-chip button {
+      border: none;
+      background: #c93b2b;
+      color: #ffffff;
+      border-radius: 2px;
       padding: 2px 6px;
       font-size: 11px;
-      background: #c93b2b;
-      border-color: #a82e20;
+      font-weight: 700;
+      cursor: pointer;
     }
-    .inventory-grid {
+    .nvx-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
       gap: 12px;
     }
-    .item-card {
+    .nvx-item {
       border: 1px solid #d0d3d6;
-      border-radius: 4px;
-      padding: 10px;
+      border-radius: 3px;
       background: #fafafa;
+      padding: 10px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       gap: 8px;
     }
-    .item-card.equipped {
+    .nvx-item.equipped {
       border-color: #0084d6;
       background: #f0f8ff;
     }
-    .item-card img {
+    .nvx-item img {
       width: 100%;
       height: 110px;
       object-fit: contain;
       background: #ffffff;
       border: 1px solid #e4e6e8;
-      border-radius: 3px;
+      border-radius: 2px;
     }
-    .item-name {
+    .nvx-item-name {
       font-size: 13px;
       font-weight: 700;
+      color: #191919;
     }
-    .item-category {
+    .nvx-item-cat {
       font-size: 11px;
-      color: #666;
+      color: #66696c;
     }
   </style>
 </head>
-<body>
-  <div id="avatar-editor-app">
-    <div id="avatar-container">
-      <div class="editor-header">
-        <h1 class="editor-title">Avatar Editor</h1>
-        <div class="user-controls">
-          <label for="user-id-input">User ID</label>
-          <input id="user-id-input" type="text" value="1" />
-          <label for="rig-type-select">Rig</label>
-          <select id="rig-type-select">
-            <option value="R6" selected>R6</option>
-            <option value="R15">R15</option>
-          </select>
-          <button id="reload-renders-btn" class="secondary" type="button">Refresh Renders</button>
+<body id="rbx-body" class="rbx-body light-theme gotham-font" data-internal-page-name="Avatar">
+  <div id="wrap" class="wrap no-gutter-ads logged-in" data-gutter-ads-enabled="false">
+    <div id="navigation-container" class="light-theme gotham-font">
+      <div id="header" class="navbar-fixed-top rbx-header" role="navigation">
+        <div class="container-fluid">
+          <div class="rbx-navbar-header">
+            <div class="navbar-header">
+              <a class="navbar-brand" href="/home">
+                <span class="icon-logo"></span>
+                <span class="icon-logo-r"></span>
+              </a>
+            </div>
+          </div>
+          <ul class="nav rbx-navbar hidden-xs hidden-sm col-md-5 col-lg-4">
+            <li class="cursor-pointer"><a class="font-header-2 nav-menu-title text-header" href="/games">Games</a></li>
+            <li class="cursor-pointer"><a class="font-header-2 nav-menu-title text-header" href="/catalog">Avatar Shop</a></li>
+            <li class="cursor-pointer"><a class="font-header-2 nav-menu-title text-header" href="/develop">Create</a></li>
+            <li class="cursor-pointer"><a class="font-header-2 nav-menu-title text-header" href="/robux?ctx-nav">Robux</a></li>
+          </ul>
         </div>
       </div>
+      <div id="navigation" class="rbx-left-col">
+        <ul class="left-col-list">
+          <li><a class="dynamic-overflow-container text-nav" href="/home" id="nav-home"><div><span class="icon-nav-home"></span></div><span class="font-header-2 dynamic-ellipsis-item">Home</span></a></li>
+          <li><a class="dynamic-overflow-container text-nav" href="/users/profile" id="nav-profile"><div><span class="icon-nav-profile"></span></div><span class="font-header-2 dynamic-ellipsis-item">Profile</span></a></li>
+          <li><a class="dynamic-overflow-container text-nav" href="/my/avatar" id="nav-character"><div><span class="icon-nav-charactercustomizer"></span></div><span class="font-header-2 dynamic-ellipsis-item">Avatar</span></a></li>
+          <li><a class="dynamic-overflow-container text-nav" href="/inventory" id="nav-inventory"><div><span class="icon-nav-inventory"></span></div><span class="font-header-2 dynamic-ellipsis-item">Inventory</span></a></li>
+        </ul>
+      </div>
+    </div>
 
-      <div class="editor-grid">
-        <div class="stage-panel">
-          <div id="avatar-full-player">
-            <div class="noob-part" data-part="Head"></div>
-            <div class="noob-part" data-part="Torso"></div>
-            <div class="noob-part" data-part="LeftArm"></div>
-            <div class="noob-part" data-part="RightArm"></div>
-            <div class="noob-part" data-part="LeftLeg"></div>
-            <div class="noob-part" data-part="RightLeg"></div>
-            <div id="avatar-equipped-layers"></div>
-          </div>
+    <div class="container-main" id="container-main">
+      <div class="content">
+        <div id="avatar-container" class="row page-content nvx-avatar-page">
+          <div avatar-base></div>
 
-          <div class="stage-actions">
-            <button id="save-avatar-btn" type="button">Save Avatar</button>
-            <button id="reset-avatar-btn" class="secondary" type="button">Reset Noob</button>
-          </div>
-
-          <div id="avatar-save-status">Ready</div>
-
-          <div class="render-previews">
-            <div class="preview-box">
-              <span>avatar.png</span>
-              <img id="preview-avatar-img" alt="Full avatar render" />
-            </div>
-            <div class="preview-box">
-              <span>headshot.png</span>
-              <img id="preview-headshot-img" alt="Headshot render" />
+          <div class="nvx-topbar">
+            <h1>Avatar</h1>
+            <div class="nvx-controls-bar">
+              <label for="user-id-input">User ID</label>
+              <input id="user-id-input" type="text" value="1" />
+              <label for="rig-type-select">Rig Type</label>
+              <select id="rig-type-select">
+                <option value="R6" selected>R6</option>
+                <option value="R15">R15</option>
+              </select>
+              <button id="reload-renders-btn" class="nvx-btn nvx-btn-light" type="button">Refresh Renders</button>
             </div>
           </div>
-        </div>
 
-        <div class="catalog-panel">
-          <div class="category-tabs" id="category-tabs"></div>
+          <div class="nvx-layout">
+            <div class="nvx-card">
+              <div id="avatar-full-player"></div>
+              <div class="nvx-stage-hint">Drag horizontally to rotate 3D noob</div>
 
-          <div class="section-heading">Equipped Items</div>
-          <div class="equipped-list" id="equipped-list"></div>
+              <div class="nvx-actions">
+                <button id="save-avatar-btn" class="nvx-btn" type="button">Save Avatar</button>
+                <button id="reset-avatar-btn" class="nvx-btn nvx-btn-light" type="button">Reset</button>
+              </div>
 
-          <div class="section-heading">Inventory</div>
-          <div class="inventory-grid" id="inventory-grid"></div>
+              <div id="avatar-save-status">Ready</div>
+
+              <div class="nvx-renders-row">
+                <div class="nvx-render-box">
+                  <div>avatar.png</div>
+                  <img id="preview-avatar-img" alt="Full avatar render" />
+                </div>
+                <div class="nvx-render-box">
+                  <div>headshot.png</div>
+                  <img id="preview-headshot-img" alt="Headshot render" />
+                </div>
+              </div>
+            </div>
+
+            <div class="nvx-card">
+              <div class="nvx-tabs" id="category-tabs"></div>
+
+              <h2 class="nvx-section-title">Currently Equipped</h2>
+              <div class="nvx-equipped-row" id="equipped-list"></div>
+
+              <h2 class="nvx-section-title">Wardrobe</h2>
+              <div class="nvx-grid" id="inventory-grid"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
+
+    <footer class="container-footer" id="footer-container"></footer>
   </div>
 
-  <script>
+  <script type="module">
+    import * as THREE from "https://esm.sh/three@0.169.0";
+
     const SUPABASE_URL = "https://hdpxjesfeawnntjzttwj.supabase.co";
     const SUPABASE_ANON_KEY = "sb_publishable_I0BgbGkSpxoerOsrnVNvhw_w_s7YP6u";
     const STORAGE_BUCKET = "novrex-avatars";
@@ -358,47 +353,159 @@
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const CATEGORIES = ["All", "Hats", "Shirts", "Pants", "Faces", "Gear"];
-
     const CATALOG_ITEMS = [
-      {
-        id: "hat-1",
-        name: "Classic Cap",
-        category: "Hats",
-        thumbnail_url: "https://novrex.lol/asset/?id=1029025",
-        overlay_url: ""
-      },
-      {
-        id: "shirt-1",
-        name: "Novrex Tee",
-        category: "Shirts",
-        thumbnail_url: "https://novrex.lol/asset/?id=144076760",
-        overlay_url: ""
-      },
-      {
-        id: "pants-1",
-        name: "Classic Jeans",
-        category: "Pants",
-        thumbnail_url: "https://novrex.lol/asset/?id=144076512",
-        overlay_url: ""
-      },
-      {
-        id: "face-1",
-        name: "Classic Smile",
-        category: "Faces",
-        thumbnail_url: "https://novrex.lol/asset/?id=120956154",
-        overlay_url: ""
-      },
-      {
-        id: "gear-1",
-        name: "Classic Sword",
-        category: "Gear",
-        thumbnail_url: "https://novrex.lol/asset/?id=125013769",
-        overlay_url: ""
-      }
+      { id: "hat-1", name: "Classic Cap", category: "Hats", thumbnail_url: "https://novrex.lol/asset/?id=1029025" },
+      { id: "shirt-1", name: "Novrex Tee", category: "Shirts", thumbnail_url: "https://novrex.lol/asset/?id=144076760" },
+      { id: "pants-1", name: "Classic Jeans", category: "Pants", thumbnail_url: "https://novrex.lol/asset/?id=144076512" },
+      { id: "face-1", name: "Classic Smile", category: "Faces", thumbnail_url: "https://novrex.lol/asset/?id=120956154" },
+      { id: "gear-1", name: "Classic Sword", category: "Gear", thumbnail_url: "https://novrex.lol/asset/?id=125013769" }
     ];
 
     let activeCategory = "All";
     let equippedItems = [];
+
+    const stageEl = document.getElementById("avatar-full-player");
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(
+      38,
+      (stageEl.clientWidth || 308) / (stageEl.clientHeight || 360),
+      0.1,
+      100
+    );
+    camera.position.set(0, 2.35, 6.4);
+    camera.lookAt(0, 2.25, 0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(stageEl.clientWidth || 308, stageEl.clientHeight || 360);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    stageEl.appendChild(renderer.domElement);
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.15);
+    scene.add(ambientLight);
+
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.1);
+    keyLight.position.set(4, 7, 5);
+    scene.add(keyLight);
+
+    const fillLight = new THREE.DirectionalLight(0xdbeafe, 0.5);
+    fillLight.position.set(-4, 3, -3);
+    scene.add(fillLight);
+
+    const rigGroup = new THREE.Group();
+    const accessoryGroup = new THREE.Group();
+    rigGroup.add(accessoryGroup);
+    scene.add(rigGroup);
+
+    function createNoobRig(rigType) {
+      while (rigGroup.children.length > 0) {
+        const child = rigGroup.children[0];
+        if (child !== accessoryGroup) {
+          rigGroup.remove(child);
+        } else {
+          break;
+        }
+      }
+
+      const yellowMat = new THREE.MeshStandardMaterial({ color: 0xf5cd30, roughness: 0.65, metalness: 0.05 });
+      const blueMat = new THREE.MeshStandardMaterial({ color: 0x0d69ab, roughness: 0.65, metalness: 0.05 });
+      const greenMat = new THREE.MeshStandardMaterial({ color: 0x4b974b, roughness: 0.65, metalness: 0.05 });
+
+      const isR15 = rigType === "R15";
+
+      const head = new THREE.Mesh(new THREE.BoxGeometry(1.15, 1.15, 1.15), yellowMat);
+      head.position.set(0, isR15 ? 3.85 : 3.75, 0);
+      rigGroup.add(head);
+
+      const torso = new THREE.Mesh(new THREE.BoxGeometry(2.0, 2.0, 1.0), blueMat);
+      torso.position.set(0, 2.15, 0);
+      rigGroup.add(torso);
+
+      const leftArm = new THREE.Mesh(new THREE.BoxGeometry(1.0, 2.0, 1.0), yellowMat);
+      leftArm.position.set(-1.55, 2.15, 0);
+      rigGroup.add(leftArm);
+
+      const rightArm = new THREE.Mesh(new THREE.BoxGeometry(1.0, 2.0, 1.0), yellowMat);
+      rightArm.position.set(1.55, 2.15, 0);
+      rigGroup.add(rightArm);
+
+      const leftLeg = new THREE.Mesh(new THREE.BoxGeometry(0.96, 2.0, 1.0), greenMat);
+      leftLeg.position.set(-0.52, 0.15, 0);
+      rigGroup.add(leftLeg);
+
+      const rightLeg = new THREE.Mesh(new THREE.BoxGeometry(0.96, 2.0, 1.0), greenMat);
+      rightLeg.position.set(0.52, 0.15, 0);
+      rigGroup.add(rightLeg);
+
+      if (isR15) {
+        torso.scale.set(0.96, 0.96, 0.96);
+        leftArm.scale.set(0.92, 0.95, 0.92);
+        rightArm.scale.set(0.92, 0.95, 0.92);
+        leftLeg.scale.set(0.92, 0.95, 0.92);
+        rightLeg.scale.set(0.92, 0.95, 0.92);
+      }
+    }
+
+    function sync3DAccessories() {
+      while (accessoryGroup.children.length > 0) {
+        accessoryGroup.remove(accessoryGroup.children[0]);
+      }
+
+      equippedItems.forEach((item) => {
+        if (item.category === "Hats") {
+          const capMat = new THREE.MeshStandardMaterial({ color: 0xd93829, roughness: 0.6 });
+          const dome = new THREE.Mesh(new THREE.BoxGeometry(1.25, 0.45, 1.25), capMat);
+          dome.position.set(0, 4.5, 0);
+          const brim = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.14, 1.65), capMat);
+          brim.position.set(0, 4.32, 0.25);
+          accessoryGroup.add(dome, brim);
+        } else if (item.category === "Gear") {
+          const bladeMat = new THREE.MeshStandardMaterial({ color: 0xd0d7de, roughness: 0.3, metalness: 0.7 });
+          const hiltMat = new THREE.MeshStandardMaterial({ color: 0x3b3f45, roughness: 0.7 });
+          const blade = new THREE.Mesh(new THREE.BoxGeometry(0.14, 2.4, 0.36), bladeMat);
+          blade.position.set(1.55, 2.8, 1.1);
+          blade.rotation.x = Math.PI / 3;
+          const guard = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.18, 0.75), hiltMat);
+          guard.position.set(1.55, 2.15, 0.45);
+          accessoryGroup.add(blade, guard);
+        }
+      });
+    }
+
+    let dragging = false;
+    let prevX = 0;
+
+    stageEl.addEventListener("pointerdown", (e) => {
+      dragging = true;
+      prevX = e.clientX;
+      stageEl.setPointerCapture(e.pointerId);
+    });
+
+    stageEl.addEventListener("pointermove", (e) => {
+      if (!dragging) return;
+      const dx = e.clientX - prevX;
+      prevX = e.clientX;
+      rigGroup.rotation.y += dx * 0.012;
+    });
+
+    stageEl.addEventListener("pointerup", (e) => {
+      dragging = false;
+      if (stageEl.hasPointerCapture(e.pointerId)) {
+        stageEl.releasePointerCapture(e.pointerId);
+      }
+    });
+
+    window.addEventListener("resize", () => {
+      const w = stageEl.clientWidth || 308;
+      const h = stageEl.clientHeight || 360;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    });
+
+    function animate() {
+      requestAnimationFrame(animate);
+      renderer.render(scene, camera);
+    }
 
     function getUserId() {
       const el = document.getElementById("user-id-input");
@@ -417,7 +524,7 @@
         const btn = document.createElement("button");
         btn.type = "button";
         btn.textContent = cat;
-        btn.className = "category-tab" + (activeCategory === cat ? " active" : "");
+        btn.className = "nvx-tab" + (activeCategory === cat ? " active" : "");
         btn.addEventListener("click", () => {
           activeCategory = cat;
           renderCategoryTabs();
@@ -427,50 +534,37 @@
       });
     }
 
-    function renderEquippedLayers() {
-      const layersEl = document.getElementById("avatar-equipped-layers");
-      layersEl.innerHTML = "";
-      equippedItems.forEach((item) => {
-        if (!item.overlay_url) return;
-        const img = document.createElement("img");
-        img.src = item.overlay_url;
-        img.alt = item.name;
-        img.className = "avatar-full-layer";
-        layersEl.appendChild(img);
-      });
-    }
-
     function renderEquippedList() {
       const listEl = document.getElementById("equipped-list");
       listEl.innerHTML = "";
       if (equippedItems.length === 0) {
-        const empty = document.createElement("span");
-        empty.textContent = "No items equipped";
-        empty.style.fontSize = "12px";
-        empty.style.color = "#666";
-        listEl.appendChild(empty);
+        const msg = document.createElement("span");
+        msg.textContent = "None equipped";
+        msg.style.fontSize = "12px";
+        msg.style.color = "#66696c";
+        listEl.appendChild(msg);
         return;
       }
 
       equippedItems.forEach((item) => {
         const chip = document.createElement("div");
-        chip.className = "equipped-chip";
+        chip.className = "nvx-chip";
 
-        const label = document.createElement("span");
-        label.textContent = `${item.name} (${item.category})`;
+        const span = document.createElement("span");
+        span.textContent = `${item.name} (${item.category})`;
 
-        const removeBtn = document.createElement("button");
-        removeBtn.type = "button";
-        removeBtn.textContent = "X";
-        removeBtn.addEventListener("click", () => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.textContent = "X";
+        btn.addEventListener("click", () => {
           equippedItems = equippedItems.filter((x) => x.id !== item.id);
-          renderEquippedLayers();
+          sync3DAccessories();
           renderEquippedList();
           renderInventory();
         });
 
-        chip.appendChild(label);
-        chip.appendChild(removeBtn);
+        chip.appendChild(span);
+        chip.appendChild(btn);
         listEl.appendChild(chip);
       });
     }
@@ -483,7 +577,7 @@
         equippedItems = equippedItems.filter((x) => x.category !== item.category);
         equippedItems.push(item);
       }
-      renderEquippedLayers();
+      sync3DAccessories();
       renderEquippedList();
       renderInventory();
     }
@@ -492,15 +586,15 @@
       const gridEl = document.getElementById("inventory-grid");
       gridEl.innerHTML = "";
 
-      const filtered =
+      const items =
         activeCategory === "All"
           ? CATALOG_ITEMS
           : CATALOG_ITEMS.filter((item) => item.category === activeCategory);
 
-      filtered.forEach((item) => {
+      items.forEach((item) => {
         const isEquipped = equippedItems.some((x) => x.id === item.id);
         const card = document.createElement("div");
-        card.className = "item-card" + (isEquipped ? " equipped" : "");
+        card.className = "nvx-item" + (isEquipped ? " equipped" : "");
 
         const img = document.createElement("img");
         img.src = item.thumbnail_url;
@@ -509,22 +603,23 @@
           img.removeAttribute("src");
         };
 
-        const nameEl = document.createElement("div");
-        nameEl.className = "item-name";
-        nameEl.textContent = item.name;
+        const name = document.createElement("div");
+        name.className = "nvx-item-name";
+        name.textContent = item.name;
 
-        const catEl = document.createElement("div");
-        catEl.className = "item-category";
-        catEl.textContent = item.category;
+        const cat = document.createElement("div");
+        cat.className = "nvx-item-cat";
+        cat.textContent = item.category;
 
         const btn = document.createElement("button");
         btn.type = "button";
-        btn.textContent = isEquipped ? "Unequip" : "Equip";
+        btn.className = "nvx-btn";
+        btn.textContent = isEquipped ? "Unequip" : "Wear";
         btn.addEventListener("click", () => toggleEquipItem(item));
 
         card.appendChild(img);
-        card.appendChild(nameEl);
-        card.appendChild(catEl);
+        card.appendChild(name);
+        card.appendChild(cat);
         card.appendChild(btn);
         gridEl.appendChild(card);
       });
@@ -532,17 +627,16 @@
 
     function refreshStoragePreviews() {
       const userId = getUserId();
-      const cacheBust = Date.now();
-      const fullUrl = `${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${encodeURIComponent(userId)}/avatar.png?t=${cacheBust}`;
-      const headUrl = `${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${encodeURIComponent(userId)}/headshot.png?t=${cacheBust}`;
-
-      document.getElementById("preview-avatar-img").src = fullUrl;
-      document.getElementById("preview-headshot-img").src = headUrl;
+      const stamp = Date.now();
+      document.getElementById("preview-avatar-img").src =
+        `${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${encodeURIComponent(userId)}/avatar.png?t=${stamp}`;
+      document.getElementById("preview-headshot-img").src =
+        `${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${encodeURIComponent(userId)}/headshot.png?t=${stamp}`;
     }
 
     async function buildAndUploadAvatarRenders(userId, items, rigType) {
       const statusEl = document.getElementById("avatar-save-status");
-      if (statusEl) statusEl.textContent = "Rendering...";
+      if (statusEl) statusEl.textContent = "Rendering 3D via RCCService...";
 
       try {
         const res = await fetch(RENDER_BRIDGE_URL, {
@@ -554,7 +648,6 @@
             equippedItems: items
           })
         });
-
         const data = await res.json();
         if (res.ok && data.ok) {
           refreshStoragePreviews();
@@ -567,13 +660,18 @@
       }
     }
 
+    document.getElementById("rig-type-select").addEventListener("change", () => {
+      createNoobRig(getRigType());
+      sync3DAccessories();
+    });
+
     document.getElementById("save-avatar-btn").addEventListener("click", () => {
       buildAndUploadAvatarRenders(getUserId(), equippedItems, getRigType());
     });
 
     document.getElementById("reset-avatar-btn").addEventListener("click", () => {
       equippedItems = [];
-      renderEquippedLayers();
+      sync3DAccessories();
       renderEquippedList();
       renderInventory();
       buildAndUploadAvatarRenders(getUserId(), equippedItems, getRigType());
@@ -587,11 +685,13 @@
       refreshStoragePreviews();
     });
 
+    createNoobRig(getRigType());
+    sync3DAccessories();
     renderCategoryTabs();
-    renderEquippedLayers();
     renderEquippedList();
     renderInventory();
     refreshStoragePreviews();
+    animate();
   </script>
 </body>
 </html>
