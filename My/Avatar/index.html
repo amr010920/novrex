@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+<head data-machine-id="WEB1832">
+<title>Avatar - Roblox</title>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,requiresActiveX=true">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="user-data" data-userid="0" data-name="Player" data-displayname="Player" data-isunder13="false" data-ispremiumuser="false">
+<meta name="locale-data" data-language-code="en_us" data-language-name="English">
+<meta name="device-meta" data-device-type="computer" data-is-in-app="false" data-is-desktop="true" data-is-phone="false" data-is-tablet="false" data-is-console="false" data-is-android-app="false" data-is-ios-app="false" data-is-uwp-app="false" data-is-xbox-app="false" data-is-amazon-app="false" data-is-win32-app="false" data-is-studio="false" data-is-game-client-browser="false" data-is-ios-device="false" data-is-android-device="false" data-is-universal-app="false" data-app-type="unknown">
+<meta name="environment-meta" data-is-testing-site="false">
+<meta id="roblox-display-names" data-enabled="false">
+<meta name="page-meta" data-internal-page-name="Avatar">
+<link href="https://images.rbxcdn.com/23421382939a9f4ae8bbe60dbe2a3e7e.ico.gzip" rel="icon">
+<link rel="stylesheet" href="https://css.rbxcdn.com/09505554a40f76a420edee7341587691b49c6cfede7ba183b5fc3177a922cd95.css">
+<link rel="stylesheet" href="https://css.rbxcdn.com/872e08cfb833578ce262269ca0c40e46d6888d5abb201cf238fe00f9abfba826.css">
+<link rel="stylesheet" href="https://css.rbxcdn.com/49c237ffce3f7e242a26d9e334d30d5f539e4737b6c59576ee2f28ab4697d61a.css">
+<link rel="stylesheet" href="https://css.rbxcdn.com/55b250e8473888792f885d898973a13692fb22157baf61aaffa62ce4545f3408.css">
+<link rel="stylesheet" href="https://css.rbxcdn.com/43246eb063d4fce7f3f28a2c6d167e33c7ecc50cf90dec5888d84a4923e7f243.css">
+<link rel="stylesheet" href="https://css.rbxcdn.com/2f599b9e9ca20ee3c155684adbf1cdcb7220bab681b55b4505123a0c34e81969.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>var Roblox=Roblox||{};Roblox.Endpoints=Roblox.Endpoints||{};Roblox.Endpoints.Urls=Roblox.Endpoints.Urls||{};Roblox.Endpoints.Urls['/my/avatar']='/my/avatar';Roblox.Endpoints.Urls['/navigation/userdata']='/navigation/userdata';Roblox.Endpoints.Urls['/avatar-thumbnail/json']='/avatar-thumbnail/json';Roblox.Endpoints.Urls['/avatar-thumbnail-3d/json']='/avatar-thumbnail-3d/json';Roblox.Endpoints.Urls['/item-thumbnails']='/item-thumbnails';Roblox.Endpoints.Urls['/outfit-thumbnail/json']='/outfit-thumbnail/json';</script>
+</head>
+<body id="rbx-body" class="rbx-body light-theme gotham-font" data-performance-relative-value="0.005" data-internal-page-name="Avatar" data-send-event-percentage="0">
+<div id="wrap" class="wrap no-gutter-ads logged-in" data-gutter-ads-enabled="false">
+<div id="navigation-container" class="light-theme gotham-font">
+<div id="header" class="navbar-fixed-top rbx-header" role="navigation">
+<div class="container-fluid">
+<div class="rbx-navbar-header">
+<div role="button" tabindex="0" class="rbx-nav-collapse"><span class="icon-nav-menu"></span></div>
+<div class="navbar-header"><a class="navbar-brand" href="/home"><span class="icon-logo"></span><span class="icon-logo-r"></span></a></div>
+</div>
+<ul class="nav rbx-navbar hidden-xs hidden-sm col-md-5 col-lg-4">
+<li class="cursor-pointer"><a class="font-header-2 nav-menu-title text-header" href="/games">Games</a></li>
+<li class="cursor-pointer"><a class="font-header-2 nav-menu-title text-header" href="/catalog">Avatar Shop</a></li>
+<li class="cursor-pointer"><a class="font-header-2 nav-menu-title text-header" href="/develop">Create</a></li>
+<li class="cursor-pointer"><a class="font-header-2 nav-menu-title text-header" href="/robux?ctx-nav">Robux</a></li>
+</ul>
+<div id="navbar-universal-search" class="navbar-left navbar-search col-xs-5 col-sm-6 col-md-2 col-lg-3" role="search">
+<div class="input-group">
+<input type="text" id="navbar-search-input" class="form-control input-field" placeholder="Search" maxlength="120" autocomplete="off">
+<div class="input-group-btn"><button id="navbar-search-btn" class="input-addon-btn" type="submit"><span class="icon-nav-search"></span></button></div>
+</div>
+</div>
+<div class="navbar-right rbx-navbar-right">
+<ul class="nav navbar-right rbx-navbar-icon-group">
+<li id="navbar-settings" class="cursor-pointer navbar-icon-item"><span id="settings-icon" class="nav-settings-icon rbx-menu-item"><span class="icon-nav-settings roblox-popover-close" id="nav-settings"></span><span class="notification-red notification nav-setting-highlight hidden">0</span></span></li>
+<li id="navbar-robux" class="cursor-pointer navbar-icon-item"><span id="nav-robux-icon" class="nav-robux-icon rbx-menu-item"><span><span class="icon-robux-28x28 roblox-popover-close" id="nav-robux"></span><span class="rbx-text-navbar-right text-header" id="nav-robux-amount"></span></span></span></li>
+</ul>
+</div>
+</div>
+</div>
+<div id="navigation" class="rbx-left-col">
+<ul>
+<li class="text-lead nav-username"><a class="text-nav font-header-2 text-overflow" href="/users/profile"></a></li>
+<li class="rbx-divider"></li>
+</ul>
+<ul class="left-col-list">
+<li><a class="dynamic-overflow-container text-nav" href="/home" id="nav-home"><div><span class="icon-nav-home"></span></div><span class="font-header-2 dynamic-ellipsis-item">Home</span></a></li>
+<li><a class="dynamic-overflow-container text-nav" href="/users/profile" id="nav-profile"><div><span class="icon-nav-profile"></span></div><span class="font-header-2 dynamic-ellipsis-item">Profile</span></a></li>
+<li><a class="dynamic-overflow-container text-nav" href="/my/messages" id="nav-message"><div><span class="icon-nav-message"></span></div><span class="font-header-2 dynamic-ellipsis-item">Messages</span></a></li>
+<li><a class="dynamic-overflow-container text-nav" href="/users/friends" id="nav-friends"><div><span class="icon-nav-friends"></span></div><span class="font-header-2 dynamic-ellipsis-item">Friends</span></a></li>
+<li><a class="dynamic-overflow-container text-nav" href="/my/avatar" id="nav-character"><div><span class="icon-nav-charactercustomizer"></span></div><span class="font-header-2 dynamic-ellipsis-item">Avatar</span></a></li>
+<li><a class="dynamic-overflow-container text-nav" href="/users/inventory" id="nav-inventory"><div><span class="icon-nav-inventory"></span></div><span class="font-header-2 dynamic-ellipsis-item">Inventory</span></a></li>
+<li><a class="dynamic-overflow-container text-nav" href="/trades" id="nav-trade"><div><span class="icon-nav-trade"></span></div><span class="font-header-2 dynamic-ellipsis-item">Trade</span></a></li>
+<li><a class="dynamic-overflow-container text-nav" href="/my/groups" id="nav-group"><div><span class="icon-nav-group"></span></div><span class="font-header-2 dynamic-ellipsis-item">Groups</span></a></li>
+</ul>
+</div>
+</div>
+<div class="container-main" id="container-main">
+<div class="content">
+<div id="use-dynamic-thumbnail-lighting" class="hidden" data-use-dynamic-thumbnail-lighting="False"></div>
+<div id="avatar-container" class="row page-content">
+<div avatar-base id="avatar-editor-app">
+<div class="col-xs-12 col-sm-4 avatar-stage">
+<div id="avatar-preview-box">
+<canvas id="avatar-full-canvas" width="720" height="720" style="display:none;"></canvas>
+<canvas id="avatar-headshot-canvas" width="720" height="720" style="display:none;"></canvas>
+<img id="avatar-full-preview" alt="Full Avatar">
+<img id="avatar-headshot-preview" alt="Headshot">
+</div>
+<button type="button" id="save-avatar-renders-btn" class="btn-primary-md">Save Avatar</button>
+<div id="avatar-save-status"></div>
+</div>
+<div class="col-xs-12 col-sm-8 avatar-inventory">
+<div id="avatar-equipped-list"></div>
+<div id="avatar-owned-grid"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<footer class="container-footer" id="footer-container" data-is-giftcards-footer-enabled="True"></footer>
+</div>
+<script>
+const SUPABASE_URL = "https://hdpxjesfeawnntjzttwj.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_I0BgbGkSpxoerOsrnVNvhw_w_s7YP6u";
+const STORAGE_BUCKET = "novrex-avatars";
+const MAX_WIDTH = 1280;
+const MAX_HEIGHT = 720;
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+function fit720p(srcWidth, srcHeight) {
+  const ratio = Math.min(MAX_WIDTH / srcWidth, MAX_HEIGHT / srcHeight, 1);
+  return {
+    width: Math.max(1, Math.round(srcWidth * ratio)),
+    height: Math.max(1, Math.round(srcHeight * ratio))
+  };
+}
+
+function loadImage(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
+async function buildAndUploadAvatarRenders(userId, equippedItems) {
+  const fullCanvas = document.getElementById("avatar-full-canvas");
+  const headCanvas = document.getElementById("avatar-headshot-canvas");
+  const fullCtx = fullCanvas.getContext("2d");
+  const headCtx = headCanvas.getContext("2d");
+
+  fullCanvas.width = 720;
+  fullCanvas.height = 720;
+  headCanvas.width = 720;
+  headCanvas.height = 720;
+
+  fullCtx.clearRect(0, 0, fullCanvas.width, fullCanvas.height);
+  headCtx.clearRect(0, 0, headCanvas.width, headCanvas.height);
+
+  for (const item of equippedItems) {
+    if (!item.thumbnail_url) continue;
+    try {
+      const img = await loadImage(item.thumbnail_url);
+      const fullDim = fit720p(img.naturalWidth || 720, img.naturalHeight || 720);
+      const fx = Math.round((fullCanvas.width - fullDim.width) / 2);
+      const fy = Math.round((fullCanvas.height - fullDim.height) / 2);
+      fullCtx.drawImage(img, fx, fy, fullDim.width, fullDim.height);
+
+      if (["Hat", "Hair", "Face", "Head"].includes(item.asset_type)) {
+        const cropSize = Math.min(img.naturalWidth || 720, img.naturalHeight || 720);
+        const headDim = fit720p(cropSize, cropSize);
+        const hx = Math.round((headCanvas.width - headDim.width) / 2);
+        const hy = Math.round((headCanvas.height - headDim.height) / 2);
+        headCtx.drawImage(img, 0, 0, cropSize, cropSize, hx, hy, headDim.width, headDim.height);
+      }
+    } catch (_) {}
+  }
+
+  const fullBlob = await new Promise((resolve) => fullCanvas.toBlob(resolve, "image/png"));
+  const headBlob = await new Promise((resolve) => headCanvas.toBlob(resolve, "image/png"));
+  const statusEl = document.getElementById("avatar-save-status");
+
+  if (!fullBlob || !headBlob) return;
+
+  const fullPath = `${userId}/avatar.png`;
+  const headPath = `${userId}/headshot.png`;
+
+  const [fullRes, headRes] = await Promise.all([
+    sb.storage.from(STORAGE_BUCKET).upload(fullPath, fullBlob, { contentType: "image/png", upsert: true }),
+    sb.storage.from(STORAGE_BUCKET).upload(headPath, headBlob, { contentType: "image/png", upsert: true })
+  ]);
+
+  if (fullRes.error || headRes.error) {
+    if (statusEl) statusEl.textContent = "Upload failed";
+    return;
+  }
+
+  const fullUrl = sb.storage.from(STORAGE_BUCKET).getPublicUrl(fullPath).data.publicUrl;
+  const headUrl = sb.storage.from(STORAGE_BUCKET).getPublicUrl(headPath).data.publicUrl;
+
+  const fullImg = document.getElementById("avatar-full-preview");
+  const headImg = document.getElementById("avatar-headshot-preview");
+  if (fullImg) fullImg.src = `${fullUrl}?t=${Date.now()}`;
+  if (headImg) headImg.src = `${headUrl}?t=${Date.now()}`;
+  if (statusEl) statusEl.textContent = "Saved (max 720p)";
+}
+
+let currentEquipped = [];
+let currentUserId = null;
+
+async function loadOwnedInventory() {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return;
+  currentUserId = user.id;
+
+  const { data: ownedItems, error } = await sb
+    .from("v_user_inventory")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("acquired_at", { ascending: false });
+
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  currentEquipped = (ownedItems || []).filter((i) => i.is_equipped);
+  renderInventory(ownedItems || []);
+}
+
+async function toggleEquip(ownershipId, currentState) {
+  const { error } = await sb
+    .from("user_owned_items")
+    .update({ is_equipped: !currentState })
+    .eq("id", ownershipId);
+
+  if (!error) {
+    await loadOwnedInventory();
+    if (currentUserId) {
+      await buildAndUploadAvatarRenders(currentUserId, currentEquipped);
+    }
+  }
+}
+
+function renderInventory(items) {
+  const equippedEl = document.getElementById("avatar-equipped-list");
+  const gridEl = document.getElementById("avatar-owned-grid");
+  equippedEl.innerHTML = "";
+  gridEl.innerHTML = "";
+
+  const equipped = items.filter((i) => i.is_equipped);
+  equipped.forEach((item) => {
+    const chip = document.createElement("span");
+    chip.className = "equipped-item";
+    chip.textContent = item.name;
+    equippedEl.appendChild(chip);
+  });
+
+  items.forEach((item) => {
+    const card = document.createElement("div");
+    card.className = item.is_equipped ? "item-card equipped" : "item-card";
+
+    const img = document.createElement("img");
+    img.src = item.thumbnail_url || "";
+    img.alt = item.name;
+
+    const title = document.createElement("div");
+    title.textContent = item.name;
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = item.is_equipped ? "Remove" : "Wear";
+    btn.onclick = () => toggleEquip(item.ownership_id, item.is_equipped);
+
+    card.appendChild(img);
+    card.appendChild(title);
+    card.appendChild(btn);
+    gridEl.appendChild(card);
+  });
+}
+
+document.getElementById("save-avatar-renders-btn").addEventListener("click", () => {
+  if (currentUserId) {
+    buildAndUploadAvatarRenders(currentUserId, currentEquipped);
+  }
+});
+
+loadOwnedInventory();
+</script>
+</body>
+</html>
