@@ -535,166 +535,24 @@
     }
 
     async function uploadFile(file, folder) {
-      if (!file) return "";
-      const ext = file.name.split(".").pop();
-      const safeUser = encodeURIComponent(currentUser.id);
+      if (!file) return FALLBACK_THUMB;
+      const ext = (file.name.split(".").pop() || "bin").toLowerCase();
+      const safeUser = encodeURIComponent(String(currentUser.id));
       const path = `${safeUser}/${folder}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
-      const { error } = await sb.storage.from(STORAGE_BUCKET).upload(path, file, { upsert: true });
-      if (error) throw error;
+
+      const { error } = await sb.storage
+        .from(STORAGE_BUCKET)
+        .upload(path, file, {
+          contentType: file.type || "application/octet-stream",
+          upsert: true
+        });
+
+      if (error) {
+        throw new Error(`Storage upload failed (${path}): ${error.message}`);
+      }
+
       const { data } = sb.storage.from(STORAGE_BUCKET).getPublicUrl(path);
-      return data.publicUrl;
-    }
-
-    async function refreshGames() {
-      if (!currentUser) return;
-      const { data, error } = await sb
-        .from(GAMES_TABLE)
-        .select("*")
-        .eq("creator_id", currentUser.id)
-        .order("created_at", { ascending: false });
-
-      if (!error && data) {
-        userGames = data;
-        const sel = document.getElementById("modal-badge-game");
-        sel.innerHTML = "";
-        if (data.length === 0) {
-          const opt = document.createElement("option");
-          opt.value = "";
-          opt.textContent = "No games yet";
-          sel.appendChild(opt);
-        } else {
-          data.forEach(g => {
-            const opt = document.createElement("option");
-            opt.value = g.id;
-            opt.textContent = g.title;
-            sel.appendChild(opt);
-          });
-        }
-      }
-    }
-
-    function applyCategoryLabels() {
-      const meta = CATEGORY_META[currentCategory];
-      document.getElementById("section-heading").textContent = meta.label;
-      document.getElementById("CreatePlace").textContent = meta.createBtn;
-      document.getElementById("modal-title").textContent = meta.modalTitle;
-      document.getElementById("modal-file-label").textContent = meta.fileLabel;
-      document.getElementById("modal-item-file").setAttribute("accept", meta.accept);
-      document.getElementById("modal-access-row").style.display = meta.isGame ? "block" : "none";
-      document.getElementById("modal-game-row").style.display = currentCategory === "badges" ? "block" : "none";
-      document.querySelector(".active-only-checkbox").style.display = meta.isGame ? "inline-block" : "none";
-    }
-
-    async function renderList() {
-      const container = document.getElementById("items-container");
-      if (!currentUser) {
-        container.innerHTML = '<p class="novrex-error" style="padding:12px;">No nvx_session cookie found. Log in to your Novrex account to view and create items.</p>';
-        return;
-      }
-
-      const meta = CATEGORY_META[currentCategory];
-      container.innerHTML = '<p style="color:#757575;padding:12px;">Loading...</p>';
-
-      try {
-        if (meta.isGame) {
-          await refreshGames();
-          const onlyPublic = document.getElementById("show-public-only").checked;
-          const list = onlyPublic ? userGames.filter(g => g.is_public) : userGames;
-          if (list.length === 0) {
-            container.innerHTML = '<p style="color:#757575;padding:12px;">No games found.</p>';
-            return;
-          }
-          container.innerHTML = list.map(game => `
-            <table class="item-table" data-item-id="${esc(game.id)}">
-              <tr>
-                <td class="image-col universe-image-col" style="text-align:center;">
-                  <a href="#configure-${esc(game.id)}" class="game-image">
-                    <img class="novrex-thumb-img" src="${esc(game.thumbnail_url || FALLBACK_THUMB)}" alt="${esc(game.title)}">
-                  </a>
-                </td>
-                <td class="universe-name-col">
-                  <a class="title notranslate" href="#configure-${esc(game.id)}">${esc(game.title)}</a>
-                  <table class="details-table">
-                    <tr>
-                      <td class="item-universe"><span>Description:</span> <span class="notranslate">${esc(game.description || "No description")}</span></td>
-                    </tr>
-                    <tr class="activate-cell">
-                      <td>
-                        <a class="${game.is_public ? "place-active" : "place-inactive"}" href="#toggle-vis" data-toggle-vis="${esc(game.id)}" data-next="${!game.is_public}">
-                          ${game.is_public ? "Public" : "Private"}
-                        </a>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-                <td class="edit-col">
-                  <a class="roblox-edit-button btn-control btn-control-large" href="#edit-${esc(game.id)}" data-edit-game="${esc(game.id)}">Edit</a>
-                </td>
-                <td class="menu-col">
-                  <div class="novrex-gear-wrapper">
-                    <a href="#menu" class="gear-button" data-gear-toggle="game-${esc(game.id)}"></a>
-                    <div class="novrex-gear-menu" id="gear-game-${esc(game.id)}">
-                      <a href="#toggle" data-toggle-vis="${esc(game.id)}" data-next="${!game.is_public}">${game.is_public ? "Make Private" : "Make Public"}</a>
-                      <a href="#delete" data-delete-game="${esc(game.id)}">Delete Game</a>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-            </table>
-            <div class="separator"></div>
-          `).join("");
-        } else {
-          const row = await ensureDevelopRow(currentUser.id);
-          const arr = Array.isArray(row[meta.col]) ? row[meta.col] : [];
-          if (arr.length === 0) {
-            container.innerHTML = `<p style="color:#757575;padding:12px;">No ${esc(meta.label.toLowerCase())} found.</p>`;
-            return;
-          }
-          container.innerHTML = arr.map((item, idx) => `
-            <table class="item-table" data-item-id="${esc(item.id || idx)}">
-              <tr>
-                <td class="image-col universe-image-col" style="text-align:center;">
-                  <img class="novrex-thumb-img" src="${esc(item.image_url || FALLBACK_THUMB)}" alt="${esc(item.name)}">
-                </td>
-                <td class="universe-name-col">
-                  <span class="title notranslate">${esc(item.name)}</span>
-                  <table class="details-table">
-                    <tr>
-                      <td class="item-universe">
-                        <span>ID:</span> ${esc(String(item.id || idx))}
-                        ${item.game_title ? " &nbsp;|&nbsp; <span>Game:</span> " + esc(item.game_title) : ""}
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-                <td class="edit-col">
-                  <a class="btn-control btn-control-large" href="#delete-item" data-delete-col="${esc(meta.col)}" data-idx="${idx}">Delete</a>
-                </td>
-                <td class="menu-col"></td>
-              </tr>
-            </table>
-            <div class="separator"></div>
-          `).join("");
-        }
-      } catch (err) {
-        container.innerHTML = `<p class="novrex-error" style="padding:12px;">${esc(err.message || String(err))}</p>`;
-      }
-    }
-
-    function openCreateModal() {
-      if (!currentUser) {
-        alert("No nvx_session cookie found. Log in to your account first.");
-        return;
-      }
-      setModalStatus("");
-      document.getElementById("modal-item-name").value = "";
-      document.getElementById("modal-item-desc").value = "";
-      document.getElementById("modal-item-file").value = "";
-      document.getElementById("novrex-create-modal").classList.add("open");
-    }
-
-    function closeCreateModal() {
-      document.getElementById("novrex-create-modal").classList.remove("open");
+      return (data && data.publicUrl) ? data.publicUrl : FALLBACK_THUMB;
     }
 
     async function submitCreateModal() {
@@ -713,7 +571,7 @@
 
       const submitBtn = document.getElementById("modal-submit-btn");
       submitBtn.disabled = true;
-      setModalStatus("Uploading...");
+      setModalStatus("Saving...");
 
       try {
         const meta = CATEGORY_META[currentCategory];
@@ -722,15 +580,15 @@
         if (meta.isGame) {
           const isPublic = document.getElementById("modal-item-public").value === "true";
           const { error } = await sb.from(GAMES_TABLE).insert({
-            creator_id: currentUser.id,
+            creator_id: String(currentUser.id),
             title: name,
             description: description,
             thumbnail_url: url,
             is_public: isPublic
           });
-          if (error) throw error;
+          if (error) throw new Error(`Games insert failed: ${error.message}`);
         } else {
-          const row = await ensureDevelopRow(currentUser.id);
+          const row = await ensureDevelopRow(String(currentUser.id));
           const list = Array.isArray(row[meta.col]) ? [...row[meta.col]] : [];
           const entry = {
             id: Date.now(),
@@ -748,14 +606,14 @@
           const { error } = await sb
             .from(DEVELOP_TABLE)
             .update({ [meta.col]: list, updated_at: new Date().toISOString() })
-            .eq("user_id", currentUser.id);
-          if (error) throw error;
+            .eq("user_id", String(currentUser.id));
+          if (error) throw new Error(`Develop save failed: ${error.message}`);
         }
 
         closeCreateModal();
         await renderList();
       } catch (err) {
-        setModalStatus(err.message || "Error creating item.", true);
+        setModalStatus(err.message || "Error saving item.", true);
       } finally {
         submitBtn.disabled = false;
       }
