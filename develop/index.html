@@ -393,26 +393,30 @@
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const CATEGORY_META = {
-      games:           { label: "Games",           createBtn: "Create New Game",  modalTitle: "Create New Game",  fileLabel: "Thumbnail or Place File (.png, .jpg, .rbxl)", accept: ".png,.jpg,.jpeg,.rbxl,.rbxlx", isGame: true,  col: null },
-      places:          { label: "Places",          createBtn: "Create Place",     modalTitle: "Create Place",       fileLabel: "Place File (.rbxl, .png, .jpg)",               accept: ".rbxl,.rbxlx,.png,.jpg,.jpeg", isGame: false, col: "places" },
-      models:          { label: "Models",          createBtn: "Create Model",     modalTitle: "Create Model",       fileLabel: "Model File (.rbxm, .png, .jpg)",               accept: ".rbxm,.rbxmx,.png,.jpg,.jpeg", isGame: false, col: "models" },
-      decals:          { label: "Decals",          createBtn: "Create Decal",     modalTitle: "Create Decal",       fileLabel: "Decal Image (.png, .jpg)",                     accept: ".png,.jpg,.jpeg", isGame: false, col: "decals" },
-      badges:          { label: "Badges",          createBtn: "Create Badge",     modalTitle: "Create Badge",       fileLabel: "Badge Icon (.png, .jpg)",                      accept: ".png,.jpg,.jpeg", isGame: false, col: "badges" },
-      "game-passes":   { label: "Game Passes",     createBtn: "Create Game Pass", modalTitle: "Create Game Pass",   fileLabel: "Game Pass Image (.png, .jpg)",                 accept: ".png,.jpg,.jpeg", isGame: false, col: "game_passes" },
-      audio:           { label: "Audio",           createBtn: "Upload Audio",     modalTitle: "Upload Audio",       fileLabel: "Audio File (.mp3, .ogg, .wav)",                accept: ".mp3,.ogg,.wav", isGame: false, col: "audio" },
-      animations:      { label: "Animations",      createBtn: "Create Animation", modalTitle: "Create Animation",   fileLabel: "Animation File (.json, .rbxmx, .png)",          accept: ".json,.rbxmx,.png", isGame: false, col: "animations" },
-      meshes:          { label: "Meshes",          createBtn: "Upload Mesh",      modalTitle: "Upload Mesh",        fileLabel: "Mesh File (.obj, .fbx, .png)",                 accept: ".obj,.fbx,.png", isGame: false, col: "meshes" },
-      "user-ads":      { label: "User Ads",        createBtn: "Create User Ad",   modalTitle: "Create User Ad",     fileLabel: "Ad Banner Image (.png, .jpg)",                 accept: ".png,.jpg,.jpeg", isGame: false, col: "user_ads" },
-      "sponsored-games":{ label: "Sponsored Games",createBtn: "Sponsor Game",     modalTitle: "Sponsor Game",       fileLabel: "Sponsor Icon (.png, .jpg)",                    accept: ".png,.jpg,.jpeg", isGame: false, col: "sponsored_games" },
-      shirts:          { label: "Shirts",          createBtn: "Create Shirt",     modalTitle: "Create Shirt",       fileLabel: "Shirt Template (.png)",                        accept: ".png", isGame: false, col: "shirts" },
-      tshirts:         { label: "T-Shirts",        createBtn: "Create T-Shirt",   modalTitle: "Create T-Shirt",     fileLabel: "T-Shirt Image (.png, .jpg)",                   accept: ".png,.jpg,.jpeg", isGame: false, col: "tshirts" },
-      pants:           { label: "Pants",           createBtn: "Create Pants",     modalTitle: "Create Pants",       fileLabel: "Pants Template (.png)",                        accept: ".png", isGame: false, col: "pants" },
-      plugins:         { label: "Plugins",         createBtn: "Create Plugin",    modalTitle: "Create Plugin",      fileLabel: "Plugin File (.lua, .luau, .rbxmx)",            accept: ".lua,.luau,.rbxmx", isGame: false, col: "plugins" }
+      games:            { label: "Games",           createBtn: "Create New Game",  modalTitle: "Create New Game",  fileLabel: "Thumbnail or Place File (.png, .jpg, .rbxl)", accept: ".png,.jpg,.jpeg,.rbxl,.rbxlx", isGame: true,  col: null },
+      places:           { label: "Places",          createBtn: "Create Place",     modalTitle: "Create Place",       fileLabel: "Place File (.rbxl, .png, .jpg)",               accept: ".rbxl,.rbxlx,.png,.jpg,.jpeg", isGame: false, col: "places" },
+      models:           { label: "Models",          createBtn: "Create Model",     modalTitle: "Create Model",       fileLabel: "Model File (.rbxm, .png, .jpg)",               accept: ".rbxm,.rbxmx,.png,.jpg,.jpeg", isGame: false, col: "models" },
+      decals:           { label: "Decals",          createBtn: "Create Decal",     modalTitle: "Create Decal",       fileLabel: "Decal Image (.png, .jpg)",                     accept: ".png,.jpg,.jpeg", isGame: false, col: "decals" },
+      badges:           { label: "Badges",          createBtn: "Create Badge",     modalTitle: "Create Badge",       fileLabel: "Badge Icon (.png, .jpg)",                      accept: ".png,.jpg,.jpeg", isGame: false, col: "badges" },
+      "game-passes":    { label: "Game Passes",     createBtn: "Create Game Pass", modalTitle: "Create Game Pass",   fileLabel: "Game Pass Image (.png, .jpg)",                 accept: ".png,.jpg,.jpeg", isGame: false, col: "game_passes" },
+      audio:            { label: "Audio",           createBtn: "Upload Audio",     modalTitle: "Upload Audio",       fileLabel: "Audio File (.mp3, .ogg, .wav)",                accept: ".mp3,.ogg,.wav", isGame: false, col: "audio" },
+      animations:       { label: "Animations",      createBtn: "Create Animation", modalTitle: "Create Animation",   fileLabel: "Animation File (.json, .rbxmx, .png)",          accept: ".json,.rbxmx,.png", isGame: false, col: "animations" },
+      meshes:           { label: "Meshes",          createBtn: "Upload Mesh",      modalTitle: "Upload Mesh",        fileLabel: "Mesh File (.obj, .fbx, .png)",                 accept: ".obj,.fbx,.png", isGame: false, col: "meshes" },
+      "user-ads":       { label: "User Ads",        createBtn: "Create User Ad",   modalTitle: "Create User Ad",     fileLabel: "Ad Banner Image (.png, .jpg)",                 accept: ".png,.jpg,.jpeg", isGame: false, col: "user_ads" },
+      "sponsored-games":{ label: "Sponsored Games", createBtn: "Sponsor Game",     modalTitle: "Sponsor Game",       fileLabel: "Sponsor Icon (.png, .jpg)",                    accept: ".png,.jpg,.jpeg", isGame: false, col: "sponsored_games" },
+      shirts:           { label: "Shirts",          createBtn: "Create Shirt",     modalTitle: "Create Shirt",       fileLabel: "Shirt Template (.png)",                        accept: ".png", isGame: false, col: "shirts" },
+      tshirts:          { label: "T-Shirts",        createBtn: "Create T-Shirt",   modalTitle: "Create T-Shirt",     fileLabel: "T-Shirt Image (.png, .jpg)",                   accept: ".png,.jpg,.jpeg", isGame: false, col: "tshirts" },
+      pants:            { label: "Pants",           createBtn: "Create Pants",     modalTitle: "Create Pants",       fileLabel: "Pants Template (.png)",                        accept: ".png", isGame: false, col: "pants" },
+      plugins:          { label: "Plugins",         createBtn: "Create Plugin",    modalTitle: "Create Plugin",      fileLabel: "Plugin File (.lua, .luau, .rbxmx)",            accept: ".lua,.luau,.rbxmx", isGame: false, col: "plugins" }
     };
 
     let currentCategory = "games";
     let currentUser = null;
     let userGames = [];
+
+    function isUuid(val) {
+      return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(val || "").trim());
+    }
 
     function esc(s) {
       return String(s || "")
@@ -471,19 +475,30 @@
       let resolvedUser = { id: sessionInfo.id, username: sessionInfo.username };
 
       try {
-        let query = sb.from(ACCOUNTS_TABLE).select("*");
-        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(sessionInfo.id);
-        if (isUuid) {
-          query = query.eq("id", sessionInfo.id);
+        if (isUuid(sessionInfo.id)) {
+          const { data, error } = await sb
+            .from(ACCOUNTS_TABLE)
+            .select("*")
+            .eq("id", sessionInfo.id)
+            .maybeSingle();
+          if (!error && data) {
+            resolvedUser = {
+              id: String(data.id || sessionInfo.id),
+              username: String(data.username || data.name || sessionInfo.username)
+            };
+          }
         } else {
-          query = query.or(`username.eq.${sessionInfo.id},id.eq.${sessionInfo.id}`);
-        }
-        const { data, error } = await query.maybeSingle();
-        if (!error && data) {
-          resolvedUser = {
-            id: String(data.id || sessionInfo.id),
-            username: String(data.username || data.name || sessionInfo.username)
-          };
+          const { data, error } = await sb
+            .from(ACCOUNTS_TABLE)
+            .select("*")
+            .eq("username", sessionInfo.id)
+            .maybeSingle();
+          if (!error && data) {
+            resolvedUser = {
+              id: String(data.id || sessionInfo.id),
+              username: String(data.username || data.name || sessionInfo.username)
+            };
+          }
         }
       } catch (e) {}
 
