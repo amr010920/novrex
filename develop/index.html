@@ -386,6 +386,8 @@
     const STORAGE_BUCKET = "develop-assets";
     const GAMES_TABLE = "games";
     const DEVELOP_TABLE = "develop";
+    const ACCOUNTS_TABLE = "users";
+    const SESSION_COOKIE_NAME = "nvx_session";
     const FALLBACK_THUMB = "https://raw.githubusercontent.com/amr010920/novrex/refs/heads/da-website/N-11-22-2026%20(1).png";
 
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -420,6 +422,35 @@
         .replace(/"/g, "&quot;");
     }
 
+    function getCookie(name) {
+      const prefix = name + "=";
+      const parts = document.cookie.split(";");
+      for (let i = 0; i < parts.length; i++) {
+        let c = parts[i].trim();
+        if (c.indexOf(prefix) === 0) {
+          return decodeURIComponent(c.substring(prefix.length));
+        }
+      }
+      return null;
+    }
+
+    function parseSessionCookie(raw) {
+      if (!raw) return null;
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === "object") {
+          const id = parsed.id || parsed.user_id || parsed.uid || parsed.username || parsed.user;
+          const username = parsed.username || parsed.user || parsed.name || id;
+          if (id) {
+            return { id: String(id), username: String(username || id) };
+          }
+        }
+      } catch (e) {}
+      const trimmed = String(raw).trim();
+      if (!trimmed) return null;
+      return { id: trimmed, username: trimmed };
+    }
+
     function setModalStatus(msg, isErr = false) {
       const el = document.getElementById("modal-status");
       el.textContent = msg;
@@ -427,15 +458,38 @@
     }
 
     async function loadUser() {
-      const { data, error } = await sb.auth.getUser();
-      if (error || !data || !data.user) {
+      const rawCookie = getCookie(SESSION_COOKIE_NAME);
+      const sessionInfo = parseSessionCookie(rawCookie);
+
+      if (!sessionInfo) {
+        currentUser = null;
         document.getElementById("header-username").textContent = "Guest";
+        document.getElementById("left-profile-link").textContent = "Guest";
         return null;
       }
-      currentUser = data.user;
-      const uname = currentUser.user_metadata?.username || currentUser.email || currentUser.id;
-      document.getElementById("header-username").textContent = uname;
-      document.getElementById("left-profile-link").textContent = uname;
+
+      let resolvedUser = { id: sessionInfo.id, username: sessionInfo.username };
+
+      try {
+        let query = sb.from(ACCOUNTS_TABLE).select("*");
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(sessionInfo.id);
+        if (isUuid) {
+          query = query.eq("id", sessionInfo.id);
+        } else {
+          query = query.or(`username.eq.${sessionInfo.id},id.eq.${sessionInfo.id}`);
+        }
+        const { data, error } = await query.maybeSingle();
+        if (!error && data) {
+          resolvedUser = {
+            id: String(data.id || sessionInfo.id),
+            username: String(data.username || data.name || sessionInfo.username)
+          };
+        }
+      } catch (e) {}
+
+      currentUser = resolvedUser;
+      document.getElementById("header-username").textContent = currentUser.username;
+      document.getElementById("left-profile-link").textContent = currentUser.username;
       return currentUser;
     }
 
@@ -468,7 +522,8 @@
     async function uploadFile(file, folder) {
       if (!file) return "";
       const ext = file.name.split(".").pop();
-      const path = `${currentUser.id}/${folder}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const safeUser = encodeURIComponent(currentUser.id);
+      const path = `${safeUser}/${folder}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
       const { error } = await sb.storage.from(STORAGE_BUCKET).upload(path, file, { upsert: true });
       if (error) throw error;
       const { data } = sb.storage.from(STORAGE_BUCKET).getPublicUrl(path);
@@ -518,7 +573,7 @@
     async function renderList() {
       const container = document.getElementById("items-container");
       if (!currentUser) {
-        container.innerHTML = '<p class="novrex-error" style="padding:12px;">Sign in with Supabase Auth to view and create items.</p>';
+        container.innerHTML = '<p class="novrex-error" style="padding:12px;">No nvx_session cookie found. Log in to your Novrex account to view and create items.</p>';
         return;
       }
 
@@ -613,7 +668,7 @@
 
     function openCreateModal() {
       if (!currentUser) {
-        alert("Sign in with Supabase Auth first.");
+        alert("No nvx_session cookie found. Log in to your account first.");
         return;
       }
       setModalStatus("");
@@ -628,6 +683,10 @@
     }
 
     async function submitCreateModal() {
+      if (!currentUser) {
+        setModalStatus("Missing nvx_session cookie.", true);
+        return;
+      }
       const name = document.getElementById("modal-item-name").value.trim();
       const description = document.getElementById("modal-item-desc").value.trim();
       const file = document.getElementById("modal-item-file").files[0];
