@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en"><head data-machine-id="WEB1300"><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Games - Novrex</title>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,requiresActiveX=true">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+<meta name="author" content="amr010920">
+<meta name="description" content="Novrex is a global platform that brings people together through play.">
+<meta name="keywords" content="free games, online games, building games, virtual worlds, free mmo, gaming cloud, physics engine">
+
+<link href="https://raw.githubusercontent.com/amr010920/novrex/refs/heads/da-website/N-11-22-2026%20(1).png" rel="icon">
+<link rel="stylesheet" href="https://static.rbxcdn.com/css/leanbase___44d3ec635baa2fbff8aed61cdea7301b_m.css/fetch">
+<link rel="stylesheet" href="https://static.rbxcdn.com/css/page___ddf27612a36eda6cc492d0930642e0d7_m.css/fetch">
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style type="text/css">
+.nvx-logo-img {
+    height: 26px;
+    width: auto;
+    display: inline-block;
+    vertical-align: middle;
+}
+.nvx-nav-session {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+.nvx-session-pill {
+    background: rgba(0, 162, 255, 0.22);
+    border: 1px solid #00a2ff;
+    color: #ffffff;
+    padding: 3px 9px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 700;
+}
+.nvx-logout-btn {
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    color: #ffffff;
+    padding: 3px 9px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+}
+.nvx-logout-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+.nvx-auth-link-btn {
+    color: #ffffff !important;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    text-decoration: none !important;
+}
+.nvx-auth-link-btn:hover {
+    background: rgba(255, 255, 255, 0.14);
+}
+.nvx-page-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    flex-wrap: wrap;
+}
+.nvx-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    background: #ffffff;
+    border: 1px solid #d5d7dc;
+    border-radius: 4px;
+}
+.nvx-filter-select, .nvx-filter-search {
+    height: 30px;
+    padding: 0 10px;
+    border: 1px solid #c6c9d0;
+    border-radius: 4px;
+    background: #ffffff;
+    color: #191919;
+    font-size: 13px;
+}
+.nvx-empty-note {
+    padding: 10px 4px;
+    font-size: 13px;
+    color: #666666;
+}
+.nvx-game-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+    gap: 12px;
+    padding: 8px 0;
+}
+.nvx-game-tile {
+    display: block;
+    background: #ffffff;
+    border: 1px solid #d5d7dc;
+    border-radius: 4px;
+    overflow: hidden;
+    color: inherit;
+    text-decoration: none !important;
+}
+.nvx-game-tile:hover {
+    border-color: #00a2ff;
+}
+.nvx-game-thumb {
+    width: 100%;
+    height: 96px;
+    object-fit: cover;
+    display: block;
+    background: #2b2e33;
+}
+.nvx-game-meta {
+    padding: 8px;
+}
+.nvx-game-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #191919;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.nvx-game-creator {
+    font-size: 11px;
+    color: #666666;
+    margin-top: 2px;
+}
+</style>
+</head>
+
+<body id="rbx-body" data-performance-relative-value="0.005" data-internal-page-name="Games" data-send-event-percentage="0.01">
+<div id="wrap" class="wrap no-gutter-ads logged-in" data-gutter-ads-enabled="false">
+    <div id="header" class="navbar-fixed-top rbx-header" data-isauthenticated="true" role="navigation">
+        <div class="container-fluid">
+            <div class="rbx-navbar-header">
+                <div data-behavior="nav-notification" class="rbx-nav-collapse" onselectstart="return false">
+                    <span class="icon-nav-menu"></span>
+                </div>
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="https://novrex.lol/home.html">
+                        <img src="https://raw.githubusercontent.com/amr010920/novrex/refs/heads/da-website/N-11-22-2026%20(1).png" alt="Novrex" class="nvx-logo-img">
+                    </a>
+                </div>
+            </div>
+
+            <ul class="nav rbx-navbar hidden-xs hidden-sm col-md-4 col-lg-3">
+                <li><a class="nav-menu-title" href="https://novrex.lol/games">Games</a></li>
+                <li><a class="nav-menu-title" href="https://novrex.lol/catalog/">Catalog</a></li>
+                <li><a class="nav-menu-title" href="https://novrex.lol/develop">Create</a></li>
+                <li><a class="buy-robux nav-menu-title" href="https://novrex.lol/upgrades/robux?ctx=nav">Currency</a></li>
+            </ul>
+
+            <div id="navbar-universal-search" class="navbar-left rbx-navbar-search col-xs-5 col-sm-6 col-md-3" data-behavior="univeral-search" role="search">
+                <div class="input-group">
+                    <input id="navbar-search-input" class="form-control input-field" type="text" placeholder="Search" maxlength="120">
+                    <div class="input-group-btn">
+                        <button id="navbar-search-btn" class="input-addon-btn" type="submit">
+                            <span class="icon-nav-search"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="navbar-right rbx-navbar-right">
+                <div id="nvx-nav-auth" class="nvx-nav-session">
+                    <span class="nvx-session-pill">Guest</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="navigation" class="rbx-left-col" data-behavior="left-col">
+        <ul>
+            <li class="text-lead">
+                <a class="text-overflow" id="nvx-left-username" href="https://novrex.lol/home.html">Guest</a>
+            </li>
+            <li class="rbx-divider"></li>
+        </ul>
+        <div class="rbx-scrollbar" data-toggle="scrollbar" onselectstart="return false">
+            <ul>
+                <li><a href="https://novrex.lol/home.html" id="nav-home"><span class="icon-nav-home"></span><span>Home</span></a></li>
+                <li><a href="https://novrex.lol/users/profile" id="nav-profile"><span class="icon-nav-profile"></span><span>Profile</span></a></li>
+                <li id="navigation-messages"><a href="https://novrex.lol/my/messages/#!/inbox" id="nav-message"><span class="icon-nav-message"></span><span>Messages</span></a></li>
+                <li id="navigation-friends"><a href="https://novrex.lol/users/friends" id="nav-friends"><span class="icon-nav-friends"></span><span>Friends</span></a></li>
+                <li><a href="https://novrex.lol/my/avatar" id="nav-character"><span class="icon-nav-charactercustomizer"></span><span>Avatar</span></a></li>
+                <li><a href="https://novrex.lol/inventory" id="nav-inventory"><span class="icon-nav-inventory"></span><span>Inventory</span></a></li>
+                <li><a href="https://novrex.lol/my/money.aspx#/#TradeItems_tab" id="nav-trade"><span class="icon-nav-trade"></span><span>Trade</span></a></li>
+                <li><a href="https://novrex.lol/my/groups.aspx" id="nav-group"><span class="icon-nav-group"></span><span>Groups</span></a></li>
+                <li><a href="https://novrex.lol/info/blog" id="nav-blog"><span class="icon-nav-blog"></span><span>Blog</span></a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="container-main">
+        <div class="content">
+            <div id="GamesContainer" class="row home-container">
+                <div class="col-xs-12 home-header">
+                    <div class="nvx-page-header-row">
+                        <div class="home-header-content non-bc">
+                            <h1>Games</h1>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xs-12">
+                    <div class="nvx-filter-bar">
+                        <select id="nvx-sort-select" class="nvx-filter-select">
+                            <option value="default">All Games</option>
+                            <option value="newest">Newest</option>
+                            <option value="oldest">Oldest</option>
+                        </select>
+                        <input id="nvx-games-filter-input" type="text" class="nvx-filter-search" placeholder="Search games or creators...">
+                    </div>
+                </div>
+
+                <div id="all-novrex-games" class="col-xs-12 container-list home-games">
+                    <div class="container-header">
+                        <h3 id="nvx-games-heading">All Games</h3>
+                    </div>
+                    <div class="game-card-list">
+                        <div id="nvx-all-games-content"><div class="nvx-empty-note">Loading games from novrex_games...</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="container-footer">
+        <div class="footer">
+            <ul class="row footer-links">
+                <li class="footer-link"><a href="https://novrex.lol/info/about-us" class="text-footer-nav" target="_blank">About Us</a></li>
+                <li class="footer-link"><a href="https://novrex.lol/info/jobs" class="text-footer-nav" target="_blank">Jobs</a></li>
+                <li class="footer-link"><a href="https://novrex.lol/info/blog" class="text-footer-nav" target="_blank">Blog</a></li>
+                <li class="footer-link"><a href="https://novrex.lol/info/parents" class="text-footer-nav" target="_blank">Parents</a></li>
+                <li class="footer-link"><a href="https://novrex.lol/info/help" class="text-footer-nav" target="_blank">Help</a></li>
+                <li class="footer-link"><a href="https://novrex.lol/info/terms" class="text-footer-nav" target="_blank">Terms</a></li>
+                <li class="footer-link"><a href="https://novrex.lol/info/privacy" class="text-footer-nav privacy" target="_blank">Privacy</a></li>
+            </ul>
+            <p class="text-footer footer-note">©2026 Novrex. Built by amr010920.</p>
+        </div>
+    </footer>
+</div>
+
+<script>
+(function () {
+    const SUPABASE_URL = "https://vzkupnfktlyjmhjgzfli.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_I0BgbGkSpxoerOsrnVNvhw_w_s7YP6u";
+    const COOKIE_NAME = "nvx_session";
+    const DEFAULT_ICON = "https://raw.githubusercontent.com/amr010920/novrex/refs/heads/da-website/N-11-22-2026%20(1).png";
+
+    const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+    const navAuth = document.getElementById("nvx-nav-auth");
+    const leftUsername = document.getElementById("nvx-left-username");
+    const allGamesEl = document.getElementById("nvx-all-games-content");
+    const gamesHeading = document.getElementById("nvx-games-heading");
+    const sortSelect = document.getElementById("nvx-sort-select");
+    const filterInput = document.getElementById("nvx-games-filter-input");
+    const topSearchInput = document.getElementById("navbar-search-input");
+
+    let gamesCache = [];
+
+    function escapeHtml(value) {
+        return String(value ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
+    }
+
+    function getNovrexCookie() {
+        const parts = document.cookie ? document.cookie.split("; ") : [];
+        for (const part of parts) {
+            const eq = part.indexOf("=");
+            if (eq === -1) continue;
+            if (part.slice(0, eq) === COOKIE_NAME) {
+                try {
+                    return JSON.parse(decodeURIComponent(part.slice(eq + 1)));
+                } catch (_e) {
+                    return null;
+                }
+            }
+        }
+        return null;
+    }
+
+    function clearNovrexCookie() {
+        const secure = window.location.protocol === "https:" ? "; Secure" : "";
+        document.cookie = `${COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax${secure}`;
+    }
+
+    function renderGameCards(targetEl, games, emptyMessage) {
+        if (!games || games.length === 0) {
+            targetEl.innerHTML = `<div class="nvx-empty-note">${escapeHtml(emptyMessage)}</div>`;
+            return;
+        }
+        targetEl.innerHTML = `<div class="nvx-game-grid">${
+            games.map((g) => {
+                const thumb = g.thumbnail_url || DEFAULT_ICON;
+                const href = g.place_url || "#";
+                return `
+                    <a href="${escapeHtml(href)}" class="nvx-game-tile">
+                        <img src="${escapeHtml(thumb)}" alt="${escapeHtml(g.title)}" class="nvx-game-thumb">
+                        <div class="nvx-game-meta">
+                            <div class="nvx-game-title">${escapeHtml(g.title)}</div>
+                            <div class="nvx-game-creator">By ${escapeHtml(g.creator_name || "Novrex")}</div>
+                        </div>
+                    </a>
+                `;
+            }).join("")
+        }</div>`;
+    }
+
+    function applyFilterAndSort() {
+        const sortMode = sortSelect ? sortSelect.value : "default";
+        const query = ((filterInput && filterInput.value) || (topSearchInput && topSearchInput.value) || "").trim().toLowerCase();
+
+        if (gamesHeading && sortSelect) {
+            gamesHeading.textContent = sortSelect.options[sortSelect.selectedIndex].text;
+        }
+
+        let list = gamesCache.slice();
+
+        if (query) {
+            list = list.filter((g) =>
+                String(g.title || "").toLowerCase().includes(query) ||
+                String(g.creator_name || "").toLowerCase().includes(query)
+            );
+        }
+
+        if (sortMode === "newest") {
+            list.sort((a, b) => Number(b.id) - Number(a.id));
+        } else if (sortMode === "oldest") {
+            list.sort((a, b) => Number(a.id) - Number(b.id));
+        }
+
+        renderGameCards(allGamesEl, list, "No games in novrex_games yet.");
+    }
+
+    async function loadGames() {
+        if (!sb) {
+            allGamesEl.innerHTML = `<div class="nvx-empty-note">Supabase client not available.</div>`;
+            return;
+        }
+
+        const { data: allGames, error } = await sb
+            .from("novrex_games")
+            .select("id, title, creator_name, thumbnail_url, place_url")
+            .order("id", { ascending: true });
+
+        if (error) {
+            allGamesEl.innerHTML = `<div class="nvx-empty-note">Could not load games from novrex_games.</div>`;
+            return;
+        }
+
+        gamesCache = allGames || [];
+        applyFilterAndSort();
+    }
+
+    async function renderSession() {
+        const acct = getNovrexCookie();
+        if (acct && acct.username) {
+            leftUsername.textContent = acct.username;
+            navAuth.innerHTML = `
+                <span class="nvx-session-pill">${escapeHtml(acct.username)}</span>
+                <button type="button" id="nvx-logout-btn" class="nvx-logout-btn">Log Out</button>
+            `;
+            const logoutBtn = document.getElementById("nvx-logout-btn");
+            if (logoutBtn) {
+                logoutBtn.addEventListener("click", function () {
+                    clearNovrexCookie();
+                    renderSession();
+                });
+            }
+        } else {
+            leftUsername.textContent = "Guest";
+            navAuth.innerHTML = `
+                <a href="https://novrex.lol/Untitled-4.html" class="nvx-auth-link-btn">Log In</a>
+                <a href="https://novrex.lol/myplace.html" class="nvx-auth-link-btn">Sign Up</a>
+            `;
+        }
+    }
+
+    if (sortSelect) sortSelect.addEventListener("change", applyFilterAndSort);
+    if (filterInput) filterInput.addEventListener("input", applyFilterAndSort);
+    if (topSearchInput) {
+        topSearchInput.addEventListener("input", function () {
+            if (filterInput) filterInput.value = topSearchInput.value;
+            applyFilterAndSort();
+        });
+    }
+
+    renderSession();
+    loadGames();
+})();
+</script>
+</body></html>
