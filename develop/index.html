@@ -116,7 +116,7 @@
       top: 100%;
       background: #fff;
       border: 1px solid #c8c8c8;
-      min-width: 165px;
+      min-width: 175px;
       z-index: 200;
       box-shadow: 0 2px 8px rgba(0,0,0,0.18);
     }
@@ -368,6 +368,10 @@
           <option value="false">Private</option>
         </select>
       </div>
+      <div class="novrex-field" id="modal-place-row" style="display:none;">
+        <label for="modal-place-file">Place File (.rbxl, .rbxlx — saved as .xml)</label>
+        <input type="file" id="modal-place-file" accept=".rbxl,.rbxlx,.xml">
+      </div>
       <div class="novrex-field">
         <label for="modal-item-file" id="modal-file-label">Thumbnail / Asset File</label>
         <input type="file" id="modal-item-file">
@@ -393,7 +397,7 @@
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const CATEGORY_META = {
-      games:            { label: "Games",           createBtn: "Create New Game",  modalTitle: "Create New Game",  fileLabel: "Thumbnail or Place File (.png, .jpg, .rbxl)", accept: ".png,.jpg,.jpeg,.rbxl,.rbxlx", isGame: true,  col: null },
+      games:            { label: "Games",           createBtn: "Create New Game",  modalTitle: "Create New Game",  fileLabel: "Thumbnail Image (Optional)",                  accept: ".png,.jpg,.jpeg,.webp",          isGame: true,  col: null },
       places:           { label: "Places",          createBtn: "Create Place",     modalTitle: "Create Place",       fileLabel: "Place File (.rbxl, .png, .jpg)",               accept: ".rbxl,.rbxlx,.png,.jpg,.jpeg", isGame: false, col: "places" },
       models:           { label: "Models",          createBtn: "Create Model",     modalTitle: "Create Model",       fileLabel: "Model File (.rbxm, .png, .jpg)",               accept: ".rbxm,.rbxmx,.png,.jpg,.jpeg", isGame: false, col: "models" },
       decals:           { label: "Decals",          createBtn: "Create Decal",     modalTitle: "Create Decal",       fileLabel: "Decal Image (.png, .jpg)",                     accept: ".png,.jpg,.jpeg", isGame: false, col: "decals" },
@@ -468,6 +472,7 @@
       document.getElementById("modal-title").textContent = meta.modalTitle;
       document.getElementById("modal-file-label").textContent = meta.fileLabel;
       document.getElementById("modal-item-file").setAttribute("accept", meta.accept);
+      document.getElementById("modal-place-row").style.display = meta.isGame ? "block" : "none";
 
       const publicOnlyLabel = document.querySelector(".active-only-checkbox");
       if (publicOnlyLabel) {
@@ -480,6 +485,8 @@
       document.getElementById("modal-item-name").value = "";
       document.getElementById("modal-item-desc").value = "";
       document.getElementById("modal-item-file").value = "";
+      document.getElementById("modal-place-file").value = "";
+      document.getElementById("modal-place-row").style.display = meta.isGame ? "block" : "none";
       setModalStatus("");
 
       document.getElementById("modal-access-row").style.display = meta.isGame ? "block" : "none";
@@ -579,6 +586,57 @@
       return created;
     }
 
+    async function convertRbxlToXmlFile(placeFile) {
+      const buffer = await placeFile.arrayBuffer();
+      const baseName = (placeFile.name || "place").replace(/\.(rbxlx?|xml)$/i, "");
+      return new File([buffer], `${baseName}.xml`, { type: "application/xml" });
+    }
+
+    async function uploadFileToBucket(file, folder, customExt = null) {
+      if (!file) return null;
+      const ext = (customExt || file.name.split(".").pop() || "bin").toLowerCase().replace(/^\./, "");
+      const safeUser = encodeURIComponent(String(currentUser.id));
+      const path = `${safeUser}/${folder}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
+
+      const { error } = await sb.storage
+        .from(STORAGE_BUCKET)
+        .upload(path, file, {
+          contentType: ext === "xml" ? "application/xml" : (file.type || "application/octet-stream"),
+          upsert: true
+        });
+
+      if (error) {
+        throw new Error(`Storage upload failed (${path}): ${error.message}`);
+      }
+
+      const { data } = sb.storage.from(STORAGE_BUCKET).getPublicUrl(path);
+      return (data && data.publicUrl) ? data.publicUrl : path;
+    }
+
+    async function downloadXmlAsRbxl(xmlUrlOrPath, gameTitle) {
+      let blob;
+      if (/^https?:\/\//i.test(xmlUrlOrPath)) {
+        const res = await fetch(xmlUrlOrPath);
+        if (!res.ok) throw new Error(`Failed to fetch XML file (${res.status})`);
+        blob = await res.blob();
+      } else {
+        const { data, error } = await sb.storage.from(STORAGE_BUCKET).download(xmlUrlOrPath);
+        if (error) throw new Error(`Storage download failed: ${error.message}`);
+        blob = data;
+      }
+
+      const rbxlBlob = new Blob([blob], { type: "application/octet-stream" });
+      const safeTitle = (gameTitle || "place").trim().replace(/[^a-z0-9_\-]+/gi, "_") || "place";
+      const dlUrl = URL.createObjectURL(rbxlBlob);
+      const a = document.createElement("a");
+      a.href = dlUrl;
+      a.download = `${safeTitle}.rbxl`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(dlUrl), 1000);
+    }
+
     async function renderList() {
       const container = document.getElementById("items-container");
       const meta = CATEGORY_META[currentCategory] || CATEGORY_META.games;
@@ -614,6 +672,7 @@
             const title = esc(game.title || "Untitled Game");
             const desc = esc(game.description || "No description");
             const isPub = Boolean(game.is_public);
+            const hasXml = Boolean(game.xml);
             const gearKey = `game-${idx}`;
 
             return `
@@ -626,13 +685,14 @@
                     <div style="font-size:15px; font-weight:600; color:#191919;">${title}</div>
                     <div style="font-size:12px; color:#666; margin:4px 0;">${desc}</div>
                     <div style="font-size:12px; color:${isPub ? "#02b757" : "#757575"}; font-weight:600;">
-                      ${isPub ? "Public" : "Private"}
+                      ${isPub ? "Public" : "Private"}${hasXml ? " &bull; .rbxl (XML)" : ""}
                     </div>
                   </td>
                   <td style="width:70px; text-align:right; vertical-align:top;">
                     <div class="novrex-gear-wrapper">
                       <button type="button" class="btn-control btn-control-small" data-gear-toggle="${gearKey}">&#9881; &#9662;</button>
                       <div class="novrex-gear-menu" id="gear-${gearKey}">
+                        ${hasXml ? `<a href="#download-rbxl" data-download-xml="${esc(game.xml)}" data-game-title="${title}">Download Place (.rbxl)</a>` : ""}
                         <a href="#toggle" data-toggle-vis="${esc(game.id)}" data-next="${!isPub}">
                           Make ${isPub ? "Private" : "Public"}
                         </a>
@@ -694,27 +754,6 @@
       }
     }
 
-    async function uploadFile(file, folder) {
-      if (!file) return FALLBACK_THUMB;
-      const ext = (file.name.split(".").pop() || "bin").toLowerCase();
-      const safeUser = encodeURIComponent(String(currentUser.id));
-      const path = `${safeUser}/${folder}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`;
-
-      const { error } = await sb.storage
-        .from(STORAGE_BUCKET)
-        .upload(path, file, {
-          contentType: file.type || "application/octet-stream",
-          upsert: true
-        });
-
-      if (error) {
-        throw new Error(`Storage upload failed (${path}): ${error.message}`);
-      }
-
-      const { data } = sb.storage.from(STORAGE_BUCKET).getPublicUrl(path);
-      return (data && data.publicUrl) ? data.publicUrl : FALLBACK_THUMB;
-    }
-
     async function submitCreateModal() {
       if (!currentUser) {
         setModalStatus("Missing nvx_session cookie.", true);
@@ -722,7 +761,8 @@
       }
       const name = document.getElementById("modal-item-name").value.trim();
       const description = document.getElementById("modal-item-desc").value.trim();
-      const file = document.getElementById("modal-item-file").files[0];
+      const thumbFile = document.getElementById("modal-item-file").files[0];
+      const placeFile = document.getElementById("modal-place-file").files[0];
 
       if (!name) {
         setModalStatus("Please enter a name.", true);
@@ -735,19 +775,31 @@
 
       try {
         const meta = CATEGORY_META[currentCategory];
-        const url = await uploadFile(file, currentCategory);
 
         if (meta.isGame) {
           const isPublic = document.getElementById("modal-item-public").value === "true";
+          const thumbnailUrl = thumbFile
+            ? await uploadFileToBucket(thumbFile, `${currentCategory}/thumbnails`)
+            : null;
+
+          let xmlUrl = null;
+          if (placeFile) {
+            setModalStatus("Converting place to XML & uploading...");
+            const xmlFile = await convertRbxlToXmlFile(placeFile);
+            xmlUrl = await uploadFileToBucket(xmlFile, `${currentCategory}/places`, "xml");
+          }
+
           const { error } = await sb.from(GAMES_TABLE).insert({
             creator_id: String(currentUser.id),
             title: name,
             description: description,
-            thumbnail_url: url,
+            thumbnail_url: thumbnailUrl,
+            xml: xmlUrl,
             is_public: isPublic
           });
           if (error) throw new Error(`Games insert failed: ${error.message}`);
         } else {
+          const url = (await uploadFileToBucket(thumbFile, currentCategory)) || FALLBACK_THUMB;
           const row = await ensureDevelopRow(String(currentUser.id));
           const list = Array.isArray(row[meta.col]) ? [...row[meta.col]] : [];
           const entry = {
@@ -839,6 +891,18 @@
         return;
       }
 
+      const dlXml = e.target.getAttribute("data-download-xml");
+      if (dlXml) {
+        e.preventDefault();
+        const gameTitle = e.target.getAttribute("data-game-title");
+        try {
+          await downloadXmlAsRbxl(dlXml, gameTitle);
+        } catch (err) {
+          alert(err.message || "Could not download place file.");
+        }
+        return;
+      }
+
       const visId = e.target.getAttribute("data-toggle-vis");
       if (visId) {
         e.preventDefault();
@@ -882,4 +946,3 @@
   </script>
 </body>
 </html>
-```[cite: 1]
