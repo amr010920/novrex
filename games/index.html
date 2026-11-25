@@ -227,7 +227,7 @@
                         <h3 id="nvx-games-heading">All Games</h3>
                     </div>
                     <div class="game-card-list">
-                        <div id="nvx-all-games-content"><div class="nvx-empty-note">Loading games from novrex_games...</div></div>
+                        <div id="nvx-all-games-content"><div class="nvx-empty-note">Loading games from games...</div></div>
                     </div>
                 </div>
             </div>
@@ -343,7 +343,7 @@
             list.sort((a, b) => Number(a.id) - Number(b.id));
         }
 
-        renderGameCards(allGamesEl, list, "No games in novrex_games yet.");
+        renderGameCards(allGamesEl, list, "No games in games yet.");
     }
 
     async function loadGames() {
@@ -353,12 +353,12 @@
         }
 
         const { data: allGames, error } = await sb
-            .from("novrex_games")
+            .from("games")
             .select("id, title, creator_name, thumbnail_url, place_url")
             .order("id", { ascending: true });
 
         if (error) {
-            allGamesEl.innerHTML = `<div class="nvx-empty-note">Could not load games from novrex_games.</div>`;
+            allGamesEl.innerHTML = `<div class="nvx-empty-note">Could not load games from games.</div>`;
             return;
         }
 
