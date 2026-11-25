@@ -342,14 +342,8 @@
         return `/games/${encodeURIComponent(game.id)}/${encodeURIComponent(slug)}`;
     }
 
-    function canViewGame(game, acct) {
-        if (!game) return false;
-        if (game.is_public === false) {
-            if (!acct) return false;
-            const cid = String(game.creator_id || "");
-            return Boolean((acct.id && cid === String(acct.id)) || (acct.username && cid === String(acct.username)));
-        }
-        return true;
+    function isPublicGame(game) {
+        return Boolean(game && game.is_public === true);
     }
 
     function renderGameCards(targetEl, games, emptyMessage) {
@@ -363,13 +357,12 @@
                 const title = g.title || "Untitled Game";
                 const creator = getCreatorLabel(g);
                 const href = getGameHref(g);
-                const privBadge = g.is_public === false ? " (Private)" : "";
                 return `
                     <a href="${escapeHtml(href)}" class="nvx-game-tile" title="${escapeHtml(g.description || title)}">
                         <img src="${escapeHtml(thumb)}" onerror="this.src='${escapeHtml(DEFAULT_ICON)}'" alt="${escapeHtml(title)}" class="nvx-game-thumb">
                         <div class="nvx-game-meta">
                             <div class="nvx-game-title">${escapeHtml(title)}</div>
-                            <div class="nvx-game-creator">By ${escapeHtml(creator)}${escapeHtml(privBadge)}</div>
+                            <div class="nvx-game-creator">By ${escapeHtml(creator)}</div>
                         </div>
                     </a>
                 `;
@@ -462,6 +455,7 @@
         const { data: rawGames, error: gamesErr } = await sb
             .from(GAMES_TABLE)
             .select("*")
+            .eq("is_public", true)
             .order("id", { ascending: true });
 
         if (gamesErr) {
@@ -471,12 +465,11 @@
             return;
         }
 
-        const allRows = Array.isArray(rawGames) ? rawGames : [];
-        const visibleGames = allRows.filter((g) => canViewGame(g, acct));
-        const byId = new Map(allRows.map((g) => [String(g.id), g]));
+        const publicGames = (Array.isArray(rawGames) ? rawGames : []).filter(isPublicGame);
+        const byId = new Map(publicGames.map((g) => [String(g.id), g]));
 
-        await loadUserNameLookup(allRows);
-        renderGameCards(allGamesEl, visibleGames, "No games in games yet.");
+        await loadUserNameLookup(publicGames);
+        renderGameCards(allGamesEl, publicGames, "No public games yet.");
 
         const userId = acct && acct.id ? acct.id : null;
         if (!userId) {
@@ -493,7 +486,7 @@
 
         const recentGames = (recentRows || [])
             .map((r) => r.games || byId.get(String(r.game_id ?? r.place_id ?? r.id ?? "")))
-            .filter((g) => canViewGame(g, acct));
+            .filter(isPublicGame);
         renderGameCards(recentEl, recentGames, "No recently played games yet.");
 
         const { data: favRows } = await sb
@@ -504,7 +497,7 @@
 
         const favGames = (favRows || [])
             .map((r) => r.games || byId.get(String(r.game_id ?? r.place_id ?? r.id ?? "")))
-            .filter((g) => canViewGame(g, acct));
+            .filter(isPublicGame);
         renderGameCards(favoritesEl, favGames, "No favorite games yet.");
     }
 
