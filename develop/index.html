@@ -461,6 +461,51 @@
       el.className = isErr ? "novrex-status novrex-error" : "novrex-status";
     }
 
+    function applyCategoryLabels() {
+      const meta = CATEGORY_META[currentCategory] || CATEGORY_META.games;
+      document.getElementById("section-heading").textContent = meta.label;
+      document.getElementById("CreatePlace").textContent = meta.createBtn;
+      document.getElementById("modal-title").textContent = meta.modalTitle;
+      document.getElementById("modal-file-label").textContent = meta.fileLabel;
+      document.getElementById("modal-item-file").setAttribute("accept", meta.accept);
+
+      const publicOnlyLabel = document.querySelector(".active-only-checkbox");
+      if (publicOnlyLabel) {
+        publicOnlyLabel.style.display = meta.isGame ? "inline-block" : "none";
+      }
+    }
+
+    function openCreateModal() {
+      const meta = CATEGORY_META[currentCategory] || CATEGORY_META.games;
+      document.getElementById("modal-item-name").value = "";
+      document.getElementById("modal-item-desc").value = "";
+      document.getElementById("modal-item-file").value = "";
+      setModalStatus("");
+
+      document.getElementById("modal-access-row").style.display = meta.isGame ? "block" : "none";
+
+      const gameRow = document.getElementById("modal-game-row");
+      if (currentCategory === "badges") {
+        gameRow.style.display = "block";
+        const sel = document.getElementById("modal-badge-game");
+        if (userGames.length > 0) {
+          sel.innerHTML = userGames
+            .map(g => `<option value="${esc(g.id)}">${esc(g.title || "Untitled Game")}</option>`)
+            .join("");
+        } else {
+          sel.innerHTML = `<option value="">No games found</option>`;
+        }
+      } else {
+        gameRow.style.display = "none";
+      }
+
+      document.getElementById("novrex-create-modal").classList.add("open");
+    }
+
+    function closeCreateModal() {
+      document.getElementById("novrex-create-modal").classList.remove("open");
+    }
+
     async function loadUser() {
       const rawCookie = getCookie(SESSION_COOKIE_NAME);
       const sessionInfo = parseSessionCookie(rawCookie);
@@ -532,6 +577,121 @@
 
       if (insErr) throw insErr;
       return created;
+    }
+
+    async function renderList() {
+      const container = document.getElementById("items-container");
+      const meta = CATEGORY_META[currentCategory] || CATEGORY_META.games;
+
+      if (!currentUser) {
+        container.innerHTML = `<p style="color:#757575; padding:12px 0;">Not logged in (missing <code>nvx_session</code> cookie). Log in to view and create ${esc(meta.label.toLowerCase())}.</p>`;
+        return;
+      }
+
+      container.innerHTML = `<p style="color:#757575;">Loading ${esc(meta.label.toLowerCase())}...</p>`;
+
+      try {
+        const { data: gamesData, error: gamesErr } = await sb
+          .from(GAMES_TABLE)
+          .select("*")
+          .eq("creator_id", String(currentUser.id))
+          .order("created_at", { ascending: false });
+
+        if (gamesErr) throw gamesErr;
+        userGames = Array.isArray(gamesData) ? gamesData : [];
+
+        if (meta.isGame) {
+          const publicOnly = document.getElementById("show-public-only").checked;
+          const filtered = publicOnly ? userGames.filter(g => g.is_public) : userGames;
+
+          if (filtered.length === 0) {
+            container.innerHTML = `<p style="color:#757575; padding:12px 0;">You haven't created any ${publicOnly ? "public " : ""}games yet.</p>`;
+            return;
+          }
+
+          container.innerHTML = filtered.map((game, idx) => {
+            const thumb = esc(game.thumbnail_url || FALLBACK_THUMB);
+            const title = esc(game.title || "Untitled Game");
+            const desc = esc(game.description || "No description");
+            const isPub = Boolean(game.is_public);
+            const gearKey = `game-${idx}`;
+
+            return `
+              <table class="item-table" style="width:100%; border-bottom:1px solid #e3e3e3; padding:10px 0; margin-bottom:8px;">
+                <tr>
+                  <td style="width:125px; vertical-align:top;">
+                    <img class="novrex-thumb-img" src="${thumb}" onerror="this.src='${FALLBACK_THUMB}'" alt="${title}">
+                  </td>
+                  <td style="vertical-align:top; padding-left:10px;">
+                    <div style="font-size:15px; font-weight:600; color:#191919;">${title}</div>
+                    <div style="font-size:12px; color:#666; margin:4px 0;">${desc}</div>
+                    <div style="font-size:12px; color:${isPub ? "#02b757" : "#757575"}; font-weight:600;">
+                      ${isPub ? "Public" : "Private"}
+                    </div>
+                  </td>
+                  <td style="width:70px; text-align:right; vertical-align:top;">
+                    <div class="novrex-gear-wrapper">
+                      <button type="button" class="btn-control btn-control-small" data-gear-toggle="${gearKey}">&#9881; &#9662;</button>
+                      <div class="novrex-gear-menu" id="gear-${gearKey}">
+                        <a href="#toggle" data-toggle-vis="${esc(game.id)}" data-next="${!isPub}">
+                          Make ${isPub ? "Private" : "Public"}
+                        </a>
+                        <a href="#delete" data-delete-game="${esc(game.id)}" style="color:#d9534f;">
+                          Delete Game
+                        </a>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            `;
+          }).join("");
+        } else {
+          const row = await ensureDevelopRow(String(currentUser.id));
+          const items = Array.isArray(row[meta.col]) ? row[meta.col] : [];
+
+          if (items.length === 0) {
+            container.innerHTML = `<p style="color:#757575; padding:12px 0;">You haven't created any ${esc(meta.label.toLowerCase())} yet.</p>`;
+            return;
+          }
+
+          container.innerHTML = items.map((item, idx) => {
+            const thumb = esc(item.image_url || FALLBACK_THUMB);
+            const name = esc(item.name || "Untitled");
+            const desc = esc(item.description || "");
+            const gameTag = item.game_title ? `<div style="font-size:11px; color:#0074bd;">Game: ${esc(item.game_title)}</div>` : "";
+            const gearKey = `${meta.col}-${idx}`;
+
+            return `
+              <table class="item-table" style="width:100%; border-bottom:1px solid #e3e3e3; padding:10px 0; margin-bottom:8px;">
+                <tr>
+                  <td style="width:125px; vertical-align:top;">
+                    <img class="novrex-thumb-img" src="${thumb}" onerror="this.src='${FALLBACK_THUMB}'" alt="${name}">
+                  </td>
+                  <td style="vertical-align:top; padding-left:10px;">
+                    <div style="font-size:15px; font-weight:600; color:#191919;">${name}</div>
+                    ${gameTag}
+                    <div style="font-size:12px; color:#666; margin-top:4px;">${desc}</div>
+                  </td>
+                  <td style="width:70px; text-align:right; vertical-align:top;">
+                    <div class="novrex-gear-wrapper">
+                      <button type="button" class="btn-control btn-control-small" data-gear-toggle="${gearKey}">&#9881; &#9662;</button>
+                      <div class="novrex-gear-menu" id="gear-${gearKey}">
+                        <a href="#delete" data-delete-col="${esc(meta.col)}" data-idx="${idx}" style="color:#d9534f;">
+                          Delete
+                        </a>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            `;
+          }).join("");
+        }
+      } catch (err) {
+        console.error("Error loading items:", err);
+        container.innerHTML = `<p class="novrex-error" style="padding:12px 0;">Failed to load ${esc(meta.label)}: ${esc(err.message || "Unknown error")}</p>`;
+      }
     }
 
     async function uploadFile(file, folder) {
@@ -722,3 +882,4 @@
   </script>
 </body>
 </html>
+```[cite: 1]
