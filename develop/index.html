@@ -150,6 +150,88 @@
       border: 1px solid #d8d8d8;
       background: #eee;
     }
+    .novrex-lib-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin: 12px 0 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #e3e3e3;
+    }
+    .novrex-lib-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .novrex-lib-filter-btn {
+      padding: 5px 11px;
+      font-size: 12px;
+      border: 1px solid #b8b8b8;
+      background: #f5f5f5;
+      color: #191919;
+      cursor: pointer;
+    }
+    .novrex-lib-filter-btn.active {
+      background: #0074bd;
+      border-color: #0074bd;
+      color: #ffffff;
+      font-weight: 600;
+    }
+    .novrex-lib-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 14px;
+    }
+    .novrex-lib-card {
+      border: 1px solid #dcdcdc;
+      background: #ffffff;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .novrex-lib-card img {
+      width: 100%;
+      height: 115px;
+      object-fit: cover;
+      border: 1px solid #e5e5e5;
+      background: #f2f2f2;
+      margin-bottom: 8px;
+    }
+    .novrex-lib-badge {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2px 6px;
+      background: #e6f2fa;
+      color: #0074bd;
+      margin-bottom: 5px;
+    }
+    .novrex-lib-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #191919;
+      margin: 0 0 4px;
+      word-break: break-word;
+    }
+    .novrex-lib-meta {
+      font-size: 11px;
+      color: #666;
+      margin-bottom: 6px;
+    }
+    .novrex-lib-desc {
+      font-size: 12px;
+      color: #444;
+      margin: 0 0 8px;
+    }
+    .novrex-lib-audio {
+      width: 100%;
+      height: 28px;
+      margin-bottom: 8px;
+    }
   </style>
 </head>
 <body id="rbx-body" data-performance-relative-value="0.005" data-internal-page-name="Create" data-send-event-percentage="0">
@@ -324,7 +406,25 @@
                     <div id="LibraryTab" style="display:none;">
                       <div style="padding:16px;">
                         <h3>Library</h3>
-                        <p style="color:#757575;">Browse public templates, models, and assets created on Novrex.</p>
+                        <p style="color:#757575;">Browse Audio, Meshes, Models, Decals, and Plugins created on Novrex.</p>
+
+                        <div class="novrex-lib-toolbar">
+                          <div class="novrex-lib-filters" id="library-filter-bar">
+                            <button type="button" class="novrex-lib-filter-btn active" data-lib-type="all">All</button>
+                            <button type="button" class="novrex-lib-filter-btn" data-lib-type="audio">Audio</button>
+                            <button type="button" class="novrex-lib-filter-btn" data-lib-type="meshes">Meshes</button>
+                            <button type="button" class="novrex-lib-filter-btn" data-lib-type="models">Models</button>
+                            <button type="button" class="novrex-lib-filter-btn" data-lib-type="decals">Decals</button>
+                            <button type="button" class="novrex-lib-filter-btn" data-lib-type="plugins">Plugins</button>
+                          </div>
+                          <div>
+                            <input type="text" id="library-search-input" placeholder="Search library assets..." style="padding:5px 8px; border:1px solid #b8b8b8; font-size:12px; width:210px;">
+                          </div>
+                        </div>
+
+                        <div id="library-items-container">
+                          <p style="color:#757575;">Select the Library tab to load assets.</p>
+                        </div>
                       </div>
                     </div>
 
@@ -403,6 +503,7 @@
     const ACCOUNTS_TABLE = "users";
     const SESSION_COOKIE_NAME = "nvx_session";
     const FALLBACK_THUMB = "https://raw.githubusercontent.com/amr010920/novrex/refs/heads/da-website/N-11-22-2026%20(1).png";
+    const LIBRARY_CATEGORIES = ["audio", "meshes", "models", "decals", "plugins"];
 
     function showBannerError(msg) {
       const banner = document.getElementById("novrex-error-banner");
@@ -451,6 +552,9 @@
     let currentCategory = "games";
     let currentUser = null;
     let userGames = [];
+    let libraryFilter = "all";
+    let librarySearch = "";
+    let cachedLibraryAssets = [];
 
     function isUuid(val) {
       return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(val || "").trim());
@@ -618,6 +722,100 @@
 
       if (insErr) throw insErr;
       return created;
+    }
+
+    async function loadLibraryAssets(forceRefresh = false) {
+      const libContainer = document.getElementById("library-items-container");
+      libContainer.innerHTML = `<p style="color:#757575;">Loading library assets...</p>`;
+
+      try {
+        if (forceRefresh || cachedLibraryAssets.length === 0) {
+          const { data: rows, error } = await sb
+            .from(DEVELOP_TABLE)
+            .select("*");
+
+          if (error) throw error;
+
+          const collected = [];
+          for (const row of (rows || [])) {
+            const creatorLabel = row.user_id ? String(row.user_id) : "Creator";
+            for (const col of LIBRARY_CATEGORIES) {
+              const arr = Array.isArray(row[col]) ? row[col] : [];
+              for (const entry of arr) {
+                if (!entry || typeof entry !== "object") continue;
+                collected.push({
+                  category: col,
+                  categoryLabel: CATEGORY_META[col]?.label || col,
+                  creator: creatorLabel,
+                  id: entry.id || `${col}-${Math.random().toString(36).slice(2, 7)}`,
+                  name: entry.name || "Untitled",
+                  description: entry.description || "",
+                  url: entry.image_url || entry.url || FALLBACK_THUMB,
+                  createdAt: entry.created_at || ""
+                });
+              }
+            }
+          }
+
+          collected.sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+          cachedLibraryAssets = collected;
+        }
+
+        renderLibraryGrid();
+      } catch (err) {
+        console.error("Library load failed:", err);
+        showBannerError(err.message || "Failed to load library");
+        libContainer.innerHTML = `<p class="novrex-error">Failed to load library: ${esc(err.message || "Unknown error")}</p>`;
+      }
+    }
+
+    function renderLibraryGrid() {
+      const libContainer = document.getElementById("library-items-container");
+      const q = librarySearch.trim().toLowerCase();
+
+      const filtered = cachedLibraryAssets.filter(item => {
+        const matchesCat = libraryFilter === "all" || item.category === libraryFilter;
+        const matchesQuery =
+          !q ||
+          item.name.toLowerCase().includes(q) ||
+          item.description.toLowerCase().includes(q) ||
+          item.creator.toLowerCase().includes(q) ||
+          item.categoryLabel.toLowerCase().includes(q);
+        return matchesCat && matchesQuery;
+      });
+
+      if (filtered.length === 0) {
+        const label = libraryFilter === "all"
+          ? "assets"
+          : (CATEGORY_META[libraryFilter]?.label || libraryFilter).toLowerCase();
+        libContainer.innerHTML = `<p style="color:#757575;">No ${esc(label)} found in the library.</p>`;
+        return;
+      }
+
+      libContainer.innerHTML = `<div class="novrex-lib-grid">${
+        filtered.map(item => {
+          const safeUrl = esc(item.url || FALLBACK_THUMB);
+          const isAudio = item.category === "audio" || /\.(mp3|ogg|wav)(\?|$)/i.test(item.url || "");
+          const isImage = item.category === "decals" || /\.(png|jpe?g|gif|webp)(\?|$)/i.test(item.url || "");
+          const previewThumb = isImage ? safeUrl : FALLBACK_THUMB;
+
+          return `
+            <div class="novrex-lib-card">
+              <div>
+                <span class="novrex-lib-badge">${esc(item.categoryLabel)}</span>
+                <img src="${previewThumb}" onerror="this.src='${FALLBACK_THUMB}'" alt="${esc(item.name)}">
+                <h4 class="novrex-lib-title">${esc(item.name)}</h4>
+                <div class="novrex-lib-meta">By ${esc(item.creator)}</div>
+                ${item.description ? `<p class="novrex-lib-desc">${esc(item.description)}</p>` : ""}
+                ${isAudio && item.url ? `<audio class="novrex-lib-audio" controls preload="none" src="${safeUrl}"></audio>` : ""}
+              </div>
+              <div>
+                <a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="btn-control btn-control-small">Open Asset</a>
+              </div>
+            </div>
+          `;
+        }).join("")
+      }</div>`;
     }
 
     async function convertRbxlToXmlFile(placeFile) {
@@ -811,7 +1009,6 @@
         if (meta.isGame) {
           const isPublic = document.getElementById("modal-item-public").value === "true";
 
-          // Create the game record in Supabase first so it exists immediately
           const { data: createdGame, error: insErr } = await sb
             .from(GAMES_TABLE)
             .insert({
@@ -857,7 +1054,6 @@
             }
           }
         } else {
-          // Ensure user row exists and update the JSONB column in Supabase
           const row = await ensureDevelopRow(String(currentUser.id));
           const list = Array.isArray(row[meta.col]) ? [...row[meta.col]] : [];
 
@@ -887,6 +1083,10 @@
             .eq("user_id", String(currentUser.id));
 
           if (updErr) throw new Error(`Develop save failed: ${updErr.message}`);
+
+          if (LIBRARY_CATEGORIES.includes(currentCategory)) {
+            cachedLibraryAssets = [];
+          }
         }
 
         showBannerError("");
@@ -919,13 +1119,14 @@
       document.getElementById("DeveloperExchangeTab").style.display = "none";
     });
 
-    document.getElementById("LibraryTabLink").addEventListener("click", () => {
+    document.getElementById("LibraryTabLink").addEventListener("click", async () => {
       document.getElementById("MyCreationsTabLink").className = "";
       document.getElementById("LibraryTabLink").className = "tab-active";
       document.getElementById("DevExTabLink").className = "";
       document.getElementById("MyCreationsTab").style.display = "none";
       document.getElementById("LibraryTab").style.display = "block";
       document.getElementById("DeveloperExchangeTab").style.display = "none";
+      await loadLibraryAssets();
     });
 
     document.getElementById("DevExTabLink").addEventListener("click", () => {
@@ -935,6 +1136,21 @@
       document.getElementById("MyCreationsTab").style.display = "none";
       document.getElementById("LibraryTab").style.display = "none";
       document.getElementById("DeveloperExchangeTab").style.display = "block";
+    });
+
+    document.getElementById("library-filter-bar").addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-lib-type]");
+      if (!btn) return;
+      libraryFilter = btn.getAttribute("data-lib-type") || "all";
+      document.querySelectorAll("#library-filter-bar .novrex-lib-filter-btn").forEach(b => {
+        b.classList.toggle("active", b === btn);
+      });
+      renderLibraryGrid();
+    });
+
+    document.getElementById("library-search-input").addEventListener("input", (e) => {
+      librarySearch = e.target.value || "";
+      renderLibraryGrid();
     });
 
     document.getElementById("CreatePlace").addEventListener("click", (e) => {
@@ -999,6 +1215,7 @@
         list.splice(idx, 1);
         const { error } = await sb.from(DEVELOP_TABLE).update({ [delCol]: list, updated_at: new Date().toISOString() }).eq("user_id", currentUser.id);
         if (error) showBannerError(error.message);
+        if (LIBRARY_CATEGORIES.includes(delCol)) cachedLibraryAssets = [];
         await renderList();
       }
     });
@@ -1017,4 +1234,3 @@
   </script>
 </body>
 </html>
-<!-- awwwwwwwwww my brain-->
