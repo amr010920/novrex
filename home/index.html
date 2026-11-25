@@ -257,7 +257,7 @@
                 <li class="footer-link"><a href="https://novrex.lol/info/terms" class="text-footer-nav" target="_blank">Terms</a></li>
                 <li class="footer-link"><a href="https://novrex.lol/info/privacy" class="text-footer-nav privacy" target="_blank">Privacy</a></li>
             </ul>
-            <p class="text-footer footer-note">©2026 Novrex. Built by amr010920.</p>
+            <p class="text-footer footer-note">©2026 Novrex Built by yepme2 and brnce</p>
         </div>
     </footer>
 </div>
@@ -389,11 +389,11 @@
         }
 
         const { data: allGames } = await sb
-            .from("novrex_games")
+            .from("games")
             .select("id, title, creator_name, thumbnail_url, place_url")
             .order("id", { ascending: true });
 
-        renderGameCards(allGamesEl, allGames || [], "No games in novrex_games yet.");
+        renderGameCards(allGamesEl, allGames || [], "No games in games yet.");
 
         if (!userId) {
             recentEl.innerHTML = `<div class="nvx-empty-note">Log in to view your recently played games.</div>`;
@@ -403,20 +403,20 @@
 
         const { data: recentRows } = await sb
             .from("novrex_recently_played")
-            .select("played_at, novrex_games(id, title, creator_name, thumbnail_url, place_url)")
+            .select("played_at, games(id, title, creator_name, thumbnail_url, place_url)")
             .eq("user_id", userId)
             .order("played_at", { ascending: false });
 
-        const recentGames = (recentRows || []).map((r) => r.novrex_games).filter(Boolean);
+        const recentGames = (recentRows || []).map((r) => r.games).filter(Boolean);
         renderGameCards(recentEl, recentGames, "No recently played games yet.");
 
         const { data: favRows } = await sb
             .from("novrex_favorites")
-            .select("favorited_at, novrex_games(id, title, creator_name, thumbnail_url, place_url)")
+            .select("favorited_at, games(id, title, creator_name, thumbnail_url, place_url)")
             .eq("user_id", userId)
             .order("favorited_at", { ascending: false });
 
-        const favGames = (favRows || []).map((r) => r.novrex_games).filter(Boolean);
+        const favGames = (favRows || []).map((r) => r.games).filter(Boolean);
         renderGameCards(favoritesEl, favGames, "No favorite games yet.");
     }
 
@@ -441,8 +441,8 @@
             leftUsername.textContent = "Guest";
             homeGreeting.textContent = "Hello, Guest!";
             navAuth.innerHTML = `
-                <a href="https://novrex.lol/Untitled-4.html" class="nvx-auth-link-btn">Log In</a>
-                <a href="https://novrex.lol/myplace.html" class="nvx-auth-link-btn">Sign Up</a>
+                <a href="https://novrex.lol/login" class="nvx-auth-link-btn">Log In</a>
+                <a href="https://novrex.lol/signup" class="nvx-auth-link-btn">Sign Up</a>
             `;
             await Promise.all([loadFriends(null), loadGamesSections(null)]);
         }
