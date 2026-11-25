@@ -105,6 +105,15 @@
     .novrex-error {
       color: #d9534f;
     }
+    .novrex-debug-box {
+      background: #fff3cd;
+      border: 1px solid #ffeeba;
+      color: #856404;
+      padding: 8px 12px;
+      margin-bottom: 10px;
+      font-size: 12px;
+      display: none;
+    }
     .novrex-gear-wrapper {
       position: relative;
       display: inline-block;
@@ -116,7 +125,7 @@
       top: 100%;
       background: #fff;
       border: 1px solid #c8c8c8;
-      min-width: 175px;
+      min-width: 185px;
       z-index: 200;
       box-shadow: 0 2px 8px rgba(0,0,0,0.18);
     }
@@ -226,6 +235,7 @@
             <div id="BodyWrapper">
               <div id="RepositionBody">
                 <div id="Body" class="body-width">
+                  <div id="novrex-error-banner" class="novrex-debug-box"></div>
                   <div id="TosAgreementInfo" data-terms-check-needed="False"></div>
                   <div id="DevelopTabs" class="tab-container">
                     <div id="MyCreationsTabLink" class="tab-active" data-url="/develop">My Creations</div>
@@ -373,7 +383,7 @@
         <input type="file" id="modal-place-file" accept=".rbxl,.rbxlx,.xml">
       </div>
       <div class="novrex-field">
-        <label for="modal-item-file" id="modal-file-label">Thumbnail / Asset File</label>
+        <label for="modal-item-file" id="modal-file-label">Thumbnail Image (Optional)</label>
         <input type="file" id="modal-item-file">
       </div>
       <div id="modal-status" class="novrex-status"></div>
@@ -393,6 +403,30 @@
     const ACCOUNTS_TABLE = "users";
     const SESSION_COOKIE_NAME = "nvx_session";
     const FALLBACK_THUMB = "https://raw.githubusercontent.com/amr010920/novrex/refs/heads/da-website/N-11-22-2026%20(1).png";
+
+    function showBannerError(msg) {
+      const banner = document.getElementById("novrex-error-banner");
+      if (!banner) return;
+      if (!msg) {
+        banner.style.display = "none";
+        banner.textContent = "";
+      } else {
+        banner.style.display = "block";
+        banner.textContent = "Error: " + msg;
+      }
+    }
+
+    window.addEventListener("error", (e) => {
+      showBannerError(e.message || "Script error");
+    });
+
+    window.addEventListener("unhandledrejection", (e) => {
+      showBannerError(e.reason?.message || String(e.reason || "Unhandled promise error"));
+    });
+
+    if (!window.supabase || !window.supabase.createClient) {
+      showBannerError("Supabase client library failed to load from CDN.");
+    }
 
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -518,10 +552,10 @@
       const sessionInfo = parseSessionCookie(rawCookie);
 
       if (!sessionInfo) {
-        currentUser = null;
-        document.getElementById("header-username").textContent = "Guest";
-        document.getElementById("left-profile-link").textContent = "Guest";
-        return null;
+        currentUser = { id: "guest_creator", username: "Creator" };
+        document.getElementById("header-username").textContent = "Creator";
+        document.getElementById("left-profile-link").textContent = "Creator";
+        return currentUser;
       }
 
       let resolvedUser = { id: sessionInfo.id, username: sessionInfo.username };
@@ -572,13 +606,13 @@
 
       const { data: created, error: insErr } = await sb
         .from(DEVELOP_TABLE)
-        .insert({
+        .upsert({
           user_id: userId,
           tshirts: [],
           shirts: [],
           decals: [],
           badges: []
-        })
+        }, { onConflict: "user_id" })
         .select()
         .single();
 
@@ -641,11 +675,6 @@
       const container = document.getElementById("items-container");
       const meta = CATEGORY_META[currentCategory] || CATEGORY_META.games;
 
-      if (!currentUser) {
-        container.innerHTML = `<p style="color:#757575; padding:12px 0;">Not logged in (missing <code>nvx_session</code> cookie). Log in to view and create ${esc(meta.label.toLowerCase())}.</p>`;
-        return;
-      }
-
       container.innerHTML = `<p style="color:#757575;">Loading ${esc(meta.label.toLowerCase())}...</p>`;
 
       try {
@@ -674,15 +703,20 @@
             const isPub = Boolean(game.is_public);
             const hasXml = Boolean(game.xml);
             const gearKey = `game-${idx}`;
+            const visitUrl = `/games/${encodeURIComponent(game.id)}/${encodeURIComponent((game.title || "game").toLowerCase().replace(/[^a-z0-9]+/g, "-"))}`;
 
             return `
               <table class="item-table" style="width:100%; border-bottom:1px solid #e3e3e3; padding:10px 0; margin-bottom:8px;">
                 <tr>
                   <td style="width:125px; vertical-align:top;">
-                    <img class="novrex-thumb-img" src="${thumb}" onerror="this.src='${FALLBACK_THUMB}'" alt="${title}">
+                    <a href="${visitUrl}">
+                      <img class="novrex-thumb-img" src="${thumb}" onerror="this.src='${FALLBACK_THUMB}'" alt="${title}">
+                    </a>
                   </td>
                   <td style="vertical-align:top; padding-left:10px;">
-                    <div style="font-size:15px; font-weight:600; color:#191919;">${title}</div>
+                    <div style="font-size:15px; font-weight:600; color:#191919;">
+                      <a href="${visitUrl}" style="color:#191919; text-decoration:none;">${title}</a>
+                    </div>
                     <div style="font-size:12px; color:#666; margin:4px 0;">${desc}</div>
                     <div style="font-size:12px; color:${isPub ? "#02b757" : "#757575"}; font-weight:600;">
                       ${isPub ? "Public" : "Private"}${hasXml ? " &bull; .rbxl (XML)" : ""}
@@ -692,6 +726,7 @@
                     <div class="novrex-gear-wrapper">
                       <button type="button" class="btn-control btn-control-small" data-gear-toggle="${gearKey}">&#9881; &#9662;</button>
                       <div class="novrex-gear-menu" id="gear-${gearKey}">
+                        <a href="${visitUrl}">Visit Game</a>
                         ${hasXml ? `<a href="#download-rbxl" data-download-xml="${esc(game.xml)}" data-game-title="${title}">Download Place (.rbxl)</a>` : ""}
                         <a href="#toggle" data-toggle-vis="${esc(game.id)}" data-next="${!isPub}">
                           Make ${isPub ? "Private" : "Public"}
@@ -750,15 +785,12 @@
         }
       } catch (err) {
         console.error("Error loading items:", err);
+        showBannerError(err.message || "Failed to load items");
         container.innerHTML = `<p class="novrex-error" style="padding:12px 0;">Failed to load ${esc(meta.label)}: ${esc(err.message || "Unknown error")}</p>`;
       }
     }
 
     async function submitCreateModal() {
-      if (!currentUser) {
-        setModalStatus("Missing nvx_session cookie.", true);
-        return;
-      }
       const name = document.getElementById("modal-item-name").value.trim();
       const description = document.getElementById("modal-item-desc").value.trim();
       const thumbFile = document.getElementById("modal-item-file").files[0];
@@ -771,16 +803,37 @@
 
       const submitBtn = document.getElementById("modal-submit-btn");
       submitBtn.disabled = true;
-      setModalStatus("Saving...");
+      setModalStatus("Creating record in Supabase...");
 
       try {
         const meta = CATEGORY_META[currentCategory];
 
         if (meta.isGame) {
           const isPublic = document.getElementById("modal-item-public").value === "true";
-          const thumbnailUrl = thumbFile
-            ? await uploadFileToBucket(thumbFile, `${currentCategory}/thumbnails`)
-            : null;
+
+          // Create the game record in Supabase first so it exists immediately
+          const { data: createdGame, error: insErr } = await sb
+            .from(GAMES_TABLE)
+            .insert({
+              creator_id: String(currentUser.id),
+              title: name,
+              description: description,
+              thumbnail_url: null,
+              xml: null,
+              is_public: isPublic
+            })
+            .select()
+            .single();
+
+          if (insErr || !createdGame) {
+            throw new Error(`Games insert failed: ${insErr ? insErr.message : "No row returned"}`);
+          }
+
+          let thumbnailUrl = null;
+          if (thumbFile) {
+            setModalStatus("Uploading thumbnail...");
+            thumbnailUrl = await uploadFileToBucket(thumbFile, `${currentCategory}/thumbnails`);
+          }
 
           let xmlUrl = null;
           if (placeFile) {
@@ -789,19 +842,31 @@
             xmlUrl = await uploadFileToBucket(xmlFile, `${currentCategory}/places`, "xml");
           }
 
-          const { error } = await sb.from(GAMES_TABLE).insert({
-            creator_id: String(currentUser.id),
-            title: name,
-            description: description,
-            thumbnail_url: thumbnailUrl,
-            xml: xmlUrl,
-            is_public: isPublic
-          });
-          if (error) throw new Error(`Games insert failed: ${error.message}`);
+          if (thumbnailUrl || xmlUrl) {
+            setModalStatus("Updating game files...");
+            const { error: updErr } = await sb
+              .from(GAMES_TABLE)
+              .update({
+                thumbnail_url: thumbnailUrl,
+                xml: xmlUrl
+              })
+              .eq("id", createdGame.id);
+
+            if (updErr) {
+              throw new Error(`Game created, but updating file URLs failed: ${updErr.message}`);
+            }
+          }
         } else {
-          const url = (await uploadFileToBucket(thumbFile, currentCategory)) || FALLBACK_THUMB;
+          // Ensure user row exists and update the JSONB column in Supabase
           const row = await ensureDevelopRow(String(currentUser.id));
           const list = Array.isArray(row[meta.col]) ? [...row[meta.col]] : [];
+
+          let url = FALLBACK_THUMB;
+          if (thumbFile) {
+            setModalStatus("Uploading file...");
+            url = (await uploadFileToBucket(thumbFile, currentCategory)) || FALLBACK_THUMB;
+          }
+
           const entry = {
             id: Date.now(),
             name,
@@ -815,13 +880,16 @@
             entry.game_title = sel.options[sel.selectedIndex]?.text || "";
           }
           list.unshift(entry);
-          const { error } = await sb
+
+          const { error: updErr } = await sb
             .from(DEVELOP_TABLE)
             .update({ [meta.col]: list, updated_at: new Date().toISOString() })
             .eq("user_id", String(currentUser.id));
-          if (error) throw new Error(`Develop save failed: ${error.message}`);
+
+          if (updErr) throw new Error(`Develop save failed: ${updErr.message}`);
         }
 
+        showBannerError("");
         closeCreateModal();
         await renderList();
       } catch (err) {
@@ -898,7 +966,7 @@
         try {
           await downloadXmlAsRbxl(dlXml, gameTitle);
         } catch (err) {
-          alert(err.message || "Could not download place file.");
+          showBannerError(err.message || "Could not download place file.");
         }
         return;
       }
@@ -907,7 +975,8 @@
       if (visId) {
         e.preventDefault();
         const nextVal = e.target.getAttribute("data-next") === "true";
-        await sb.from(GAMES_TABLE).update({ is_public: nextVal }).eq("id", visId);
+        const { error } = await sb.from(GAMES_TABLE).update({ is_public: nextVal }).eq("id", visId);
+        if (error) showBannerError(error.message);
         await renderList();
         return;
       }
@@ -915,7 +984,8 @@
       const delGameId = e.target.getAttribute("data-delete-game");
       if (delGameId) {
         e.preventDefault();
-        await sb.from(GAMES_TABLE).delete().eq("id", delGameId);
+        const { error } = await sb.from(GAMES_TABLE).delete().eq("id", delGameId);
+        if (error) showBannerError(error.message);
         await renderList();
         return;
       }
@@ -927,7 +997,8 @@
         const row = await ensureDevelopRow(currentUser.id);
         const list = Array.isArray(row[delCol]) ? [...row[delCol]] : [];
         list.splice(idx, 1);
-        await sb.from(DEVELOP_TABLE).update({ [delCol]: list, updated_at: new Date().toISOString() }).eq("user_id", currentUser.id);
+        const { error } = await sb.from(DEVELOP_TABLE).update({ [delCol]: list, updated_at: new Date().toISOString() }).eq("user_id", currentUser.id);
+        if (error) showBannerError(error.message);
         await renderList();
       }
     });
@@ -946,3 +1017,4 @@
   </script>
 </body>
 </html>
+<!-- awwwwwwwwww my brain-->
