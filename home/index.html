@@ -121,6 +121,9 @@
     font-size: 11px;
     color: #666666;
     margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 </style>
 </head>
@@ -257,7 +260,7 @@
                 <li class="footer-link"><a href="https://novrex.lol/info/terms" class="text-footer-nav" target="_blank">Terms</a></li>
                 <li class="footer-link"><a href="https://novrex.lol/info/privacy" class="text-footer-nav privacy" target="_blank">Privacy</a></li>
             </ul>
-            <p class="text-footer footer-note">©2026 Novrex Built by yepme2 and brnce</p>
+            <p class="text-footer footer-note">©2026 Novrex. Built by amr010920.</p>
         </div>
     </footer>
 </div>
@@ -266,6 +269,8 @@
 (function () {
     const SUPABASE_URL = "https://vzkupnfktlyjmhjgzfli.supabase.co";
     const SUPABASE_KEY = "sb_publishable_I0BgbGkSpxoerOsrnVNvhw_w_s7YP6u";
+    const GAMES_TABLE = "games";
+    const USERS_TABLE = "users";
     const COOKIE_NAME = "nvx_session";
     const DEFAULT_ICON = "https://raw.githubusercontent.com/amr010920/novrex/refs/heads/da-website/N-11-22-2026%20(1).png";
 
@@ -279,6 +284,8 @@
     const recentEl = document.getElementById("recently-visited-places-content");
     const favoritesEl = document.getElementById("my-favorites-games-content");
     const allGamesEl = document.getElementById("nvx-all-games-content");
+
+    let userNameMap = new Map();
 
     function escapeHtml(value) {
         return String(value ?? "")
@@ -294,10 +301,18 @@
             const eq = part.indexOf("=");
             if (eq === -1) continue;
             if (part.slice(0, eq) === COOKIE_NAME) {
+                const raw = decodeURIComponent(part.slice(eq + 1));
                 try {
-                    return JSON.parse(decodeURIComponent(part.slice(eq + 1)));
-                } catch (_e) {
-                    return null;
+                    const parsed = JSON.parse(raw);
+                    if (parsed && typeof parsed === "object") {
+                        return {
+                            id: parsed.id || parsed.user_id || parsed.uid || parsed.username || parsed.user || "",
+                            username: parsed.username || parsed.user || parsed.name || parsed.id || ""
+                        };
+                    }
+                } catch (_e) {}
+                if (raw) {
+                    return { id: raw, username: raw };
                 }
             }
         }
@@ -309,6 +324,34 @@
         document.cookie = `${COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax${secure}`;
     }
 
+    function getCreatorLabel(game) {
+        if (!game) return "Novrex";
+        if (game.creator_id) {
+            const mapped = userNameMap.get(String(game.creator_id));
+            if (mapped) return mapped;
+            return String(game.creator_id);
+        }
+        return "Novrex";
+    }
+
+    function getGameHref(game) {
+        const slug = String(game.title || "game")
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-+|-+$/g, "") || "game";
+        return `/games/${encodeURIComponent(game.id)}/${encodeURIComponent(slug)}`;
+    }
+
+    function canViewGame(game, acct) {
+        if (!game) return false;
+        if (game.is_public === false) {
+            if (!acct) return false;
+            const cid = String(game.creator_id || "");
+            return Boolean((acct.id && cid === String(acct.id)) || (acct.username && cid === String(acct.username)));
+        }
+        return true;
+    }
+
     function renderGameCards(targetEl, games, emptyMessage) {
         if (!games || games.length === 0) {
             targetEl.innerHTML = `<div class="nvx-empty-note">${escapeHtml(emptyMessage)}</div>`;
@@ -317,18 +360,46 @@
         targetEl.innerHTML = `<div class="nvx-game-grid">${
             games.map((g) => {
                 const thumb = g.thumbnail_url || DEFAULT_ICON;
-                const href = g.place_url || "#";
+                const title = g.title || "Untitled Game";
+                const creator = getCreatorLabel(g);
+                const href = getGameHref(g);
+                const privBadge = g.is_public === false ? " (Private)" : "";
                 return `
-                    <a href="${escapeHtml(href)}" class="nvx-game-tile">
-                        <img src="${escapeHtml(thumb)}" alt="${escapeHtml(g.title)}" class="nvx-game-thumb">
+                    <a href="${escapeHtml(href)}" class="nvx-game-tile" title="${escapeHtml(g.description || title)}">
+                        <img src="${escapeHtml(thumb)}" onerror="this.src='${escapeHtml(DEFAULT_ICON)}'" alt="${escapeHtml(title)}" class="nvx-game-thumb">
                         <div class="nvx-game-meta">
-                            <div class="nvx-game-title">${escapeHtml(g.title)}</div>
-                            <div class="nvx-game-creator">By ${escapeHtml(g.creator_name || "Novrex")}</div>
+                            <div class="nvx-game-title">${escapeHtml(title)}</div>
+                            <div class="nvx-game-creator">By ${escapeHtml(creator)}${escapeHtml(privBadge)}</div>
                         </div>
                     </a>
                 `;
             }).join("")
         }</div>`;
+    }
+
+    async function loadUserNameLookup(games) {
+        const ids = Array.from(new Set(
+            (games || [])
+                .map(g => g?.creator_id)
+                .filter(v => v !== null && v !== undefined && String(v).trim() !== "")
+        ));
+        if (!ids.length || !sb) return;
+
+        for (const tbl of [USERS_TABLE, "novrex_users"]) {
+            try {
+                const { data: rows, error } = await sb.from(tbl).select("*");
+                if (!error && Array.isArray(rows) && rows.length) {
+                    for (const u of rows) {
+                        const label = u.username || u.name || u.display_name;
+                        if (label) {
+                            if (u.id !== undefined && u.id !== null) userNameMap.set(String(u.id), String(label));
+                            if (u.username) userNameMap.set(String(u.username), String(label));
+                        }
+                    }
+                    break;
+                }
+            } catch (_e) {}
+        }
     }
 
     async function loadFriends(userId) {
@@ -380,7 +451,7 @@
         `).join("");
     }
 
-    async function loadGamesSections(userId) {
+    async function loadGamesSections(acct) {
         if (!sb) {
             recentEl.innerHTML = `<div class="nvx-empty-note">Supabase client not available.</div>`;
             favoritesEl.innerHTML = `<div class="nvx-empty-note">Supabase client not available.</div>`;
@@ -388,13 +459,26 @@
             return;
         }
 
-        const { data: allGames } = await sb
-            .from("games")
-            .select("id, title, creator_name, thumbnail_url, place_url")
+        const { data: rawGames, error: gamesErr } = await sb
+            .from(GAMES_TABLE)
+            .select("*")
             .order("id", { ascending: true });
 
-        renderGameCards(allGamesEl, allGames || [], "No games in games yet.");
+        if (gamesErr) {
+            allGamesEl.innerHTML = `<div class="nvx-empty-note">Could not load games: ${escapeHtml(gamesErr.message)}</div>`;
+            recentEl.innerHTML = `<div class="nvx-empty-note">Could not load recently played games.</div>`;
+            favoritesEl.innerHTML = `<div class="nvx-empty-note">Could not load favorite games.</div>`;
+            return;
+        }
 
+        const allRows = Array.isArray(rawGames) ? rawGames : [];
+        const visibleGames = allRows.filter((g) => canViewGame(g, acct));
+        const byId = new Map(allRows.map((g) => [String(g.id), g]));
+
+        await loadUserNameLookup(allRows);
+        renderGameCards(allGamesEl, visibleGames, "No games in games yet.");
+
+        const userId = acct && acct.id ? acct.id : null;
         if (!userId) {
             recentEl.innerHTML = `<div class="nvx-empty-note">Log in to view your recently played games.</div>`;
             favoritesEl.innerHTML = `<div class="nvx-empty-note">Log in to view your favorite games.</div>`;
@@ -403,20 +487,24 @@
 
         const { data: recentRows } = await sb
             .from("novrex_recently_played")
-            .select("played_at, games(id, title, creator_name, thumbnail_url, place_url)")
+            .select("*")
             .eq("user_id", userId)
             .order("played_at", { ascending: false });
 
-        const recentGames = (recentRows || []).map((r) => r.games).filter(Boolean);
+        const recentGames = (recentRows || [])
+            .map((r) => r.games || byId.get(String(r.game_id ?? r.place_id ?? r.id ?? "")))
+            .filter((g) => canViewGame(g, acct));
         renderGameCards(recentEl, recentGames, "No recently played games yet.");
 
         const { data: favRows } = await sb
             .from("novrex_favorites")
-            .select("favorited_at, games(id, title, creator_name, thumbnail_url, place_url)")
+            .select("*")
             .eq("user_id", userId)
             .order("favorited_at", { ascending: false });
 
-        const favGames = (favRows || []).map((r) => r.games).filter(Boolean);
+        const favGames = (favRows || [])
+            .map((r) => r.games || byId.get(String(r.game_id ?? r.place_id ?? r.id ?? "")))
+            .filter((g) => canViewGame(g, acct));
         renderGameCards(favoritesEl, favGames, "No favorite games yet.");
     }
 
@@ -436,7 +524,7 @@
                     renderHome();
                 });
             }
-            await Promise.all([loadFriends(acct.id), loadGamesSections(acct.id)]);
+            await Promise.all([loadFriends(acct.id), loadGamesSections(acct)]);
         } else {
             leftUsername.textContent = "Guest";
             homeGreeting.textContent = "Hello, Guest!";
