@@ -340,13 +340,12 @@
                 const title = g.title || "Untitled Game";
                 const creator = getCreatorLabel(g);
                 const href = getGameHref(g);
-                const privBadge = g.is_public === false ? " (Private)" : "";
                 return `
                     <a href="${escapeHtml(href)}" class="nvx-game-tile" title="${escapeHtml(g.description || title)}">
                         <img src="${escapeHtml(thumb)}" onerror="this.src='${escapeHtml(DEFAULT_ICON)}'" alt="${escapeHtml(title)}" class="nvx-game-thumb">
                         <div class="nvx-game-meta">
                             <div class="nvx-game-title">${escapeHtml(title)}</div>
-                            <div class="nvx-game-creator">By ${escapeHtml(creator)}${escapeHtml(privBadge)}</div>
+                            <div class="nvx-game-creator">By ${escapeHtml(creator)}</div>
                         </div>
                     </a>
                 `;
@@ -357,21 +356,12 @@
     function applyFilterAndSort() {
         const sortMode = sortSelect ? sortSelect.value : "default";
         const query = ((filterInput && filterInput.value) || (topSearchInput && topSearchInput.value) || "").trim().toLowerCase();
-        const acct = getNovrexCookie();
-        const currentId = acct ? String(acct.id || "") : "";
-        const currentUser = acct ? String(acct.username || "") : "";
 
         if (gamesHeading && sortSelect) {
             gamesHeading.textContent = sortSelect.options[sortSelect.selectedIndex].text;
         }
 
-        let list = gamesCache.filter((g) => {
-            if (g.is_public === false) {
-                const cid = String(g.creator_id || "");
-                return Boolean((currentId && cid === currentId) || (currentUser && cid === currentUser));
-            }
-            return true;
-        });
+        let list = gamesCache.filter((g) => g && g.is_public === true);
 
         if (query) {
             list = list.filter((g) => {
@@ -390,7 +380,7 @@
             list.sort((a, b) => Number(a.id) - Number(b.id));
         }
 
-        renderGameCards(allGamesEl, list, "No games found in games.");
+        renderGameCards(allGamesEl, list, "No public games found.");
     }
 
     async function loadUsernamesForGames(games) {
@@ -426,6 +416,7 @@
         const { data: allGames, error } = await sb
             .from(GAMES_TABLE)
             .select("*")
+            .eq("is_public", true)
             .order("id", { ascending: true });
 
         if (error) {
@@ -433,7 +424,7 @@
             return;
         }
 
-        gamesCache = Array.isArray(allGames) ? allGames : [];
+        gamesCache = (Array.isArray(allGames) ? allGames : []).filter((g) => g && g.is_public === true);
         await loadUsernamesForGames(gamesCache);
         applyFilterAndSort();
     }
@@ -451,7 +442,6 @@
                 logoutBtn.addEventListener("click", function () {
                     clearNovrexCookie();
                     renderSession();
-                    applyFilterAndSort();
                 });
             }
         } else {
