@@ -133,6 +133,9 @@
     font-size: 11px;
     color: #666666;
     margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 </style>
 </head>
@@ -254,6 +257,8 @@
 (function () {
     const SUPABASE_URL = "https://vzkupnfktlyjmhjgzfli.supabase.co";
     const SUPABASE_KEY = "sb_publishable_I0BgbGkSpxoerOsrnVNvhw_w_s7YP6u";
+    const GAMES_TABLE = "games";
+    const USERS_TABLE = "users";
     const COOKIE_NAME = "nvx_session";
     const DEFAULT_ICON = "https://raw.githubusercontent.com/amr010920/novrex/refs/heads/da-website/N-11-22-2026%20(1).png";
 
@@ -268,6 +273,7 @@
     const topSearchInput = document.getElementById("navbar-search-input");
 
     let gamesCache = [];
+    let userNameMap = new Map();
 
     function escapeHtml(value) {
         return String(value ?? "")
@@ -283,10 +289,18 @@
             const eq = part.indexOf("=");
             if (eq === -1) continue;
             if (part.slice(0, eq) === COOKIE_NAME) {
+                const raw = decodeURIComponent(part.slice(eq + 1));
                 try {
-                    return JSON.parse(decodeURIComponent(part.slice(eq + 1)));
-                } catch (_e) {
-                    return null;
+                    const parsed = JSON.parse(raw);
+                    if (parsed && typeof parsed === "object") {
+                        return {
+                            id: parsed.id || parsed.user_id || parsed.uid || parsed.username || parsed.user || "",
+                            username: parsed.username || parsed.user || parsed.name || parsed.id || ""
+                        };
+                    }
+                } catch (_e) {}
+                if (raw) {
+                    return { id: raw, username: raw };
                 }
             }
         }
@@ -298,6 +312,23 @@
         document.cookie = `${COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax${secure}`;
     }
 
+    function getCreatorLabel(game) {
+        if (game.creator_id) {
+            const mapped = userNameMap.get(String(game.creator_id));
+            if (mapped) return mapped;
+            return String(game.creator_id);
+        }
+        return "Novrex";
+    }
+
+    function getGameHref(game) {
+        const slug = String(game.title || "game")
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-+|-+$/g, "") || "game";
+        return `/games/${encodeURIComponent(game.id)}/${encodeURIComponent(slug)}`;
+    }
+
     function renderGameCards(targetEl, games, emptyMessage) {
         if (!games || games.length === 0) {
             targetEl.innerHTML = `<div class="nvx-empty-note">${escapeHtml(emptyMessage)}</div>`;
@@ -306,13 +337,16 @@
         targetEl.innerHTML = `<div class="nvx-game-grid">${
             games.map((g) => {
                 const thumb = g.thumbnail_url || DEFAULT_ICON;
-                const href = g.place_url || "#";
+                const title = g.title || "Untitled Game";
+                const creator = getCreatorLabel(g);
+                const href = getGameHref(g);
+                const privBadge = g.is_public === false ? " (Private)" : "";
                 return `
-                    <a href="${escapeHtml(href)}" class="nvx-game-tile">
-                        <img src="${escapeHtml(thumb)}" alt="${escapeHtml(g.title)}" class="nvx-game-thumb">
+                    <a href="${escapeHtml(href)}" class="nvx-game-tile" title="${escapeHtml(g.description || title)}">
+                        <img src="${escapeHtml(thumb)}" onerror="this.src='${escapeHtml(DEFAULT_ICON)}'" alt="${escapeHtml(title)}" class="nvx-game-thumb">
                         <div class="nvx-game-meta">
-                            <div class="nvx-game-title">${escapeHtml(g.title)}</div>
-                            <div class="nvx-game-creator">By ${escapeHtml(g.creator_name || "Novrex")}</div>
+                            <div class="nvx-game-title">${escapeHtml(title)}</div>
+                            <div class="nvx-game-creator">By ${escapeHtml(creator)}${escapeHtml(privBadge)}</div>
                         </div>
                     </a>
                 `;
@@ -323,18 +357,31 @@
     function applyFilterAndSort() {
         const sortMode = sortSelect ? sortSelect.value : "default";
         const query = ((filterInput && filterInput.value) || (topSearchInput && topSearchInput.value) || "").trim().toLowerCase();
+        const acct = getNovrexCookie();
+        const currentId = acct ? String(acct.id || "") : "";
+        const currentUser = acct ? String(acct.username || "") : "";
 
         if (gamesHeading && sortSelect) {
             gamesHeading.textContent = sortSelect.options[sortSelect.selectedIndex].text;
         }
 
-        let list = gamesCache.slice();
+        let list = gamesCache.filter((g) => {
+            if (g.is_public === false) {
+                const cid = String(g.creator_id || "");
+                return Boolean((currentId && cid === currentId) || (currentUser && cid === currentUser));
+            }
+            return true;
+        });
 
         if (query) {
-            list = list.filter((g) =>
-                String(g.title || "").toLowerCase().includes(query) ||
-                String(g.creator_name || "").toLowerCase().includes(query)
-            );
+            list = list.filter((g) => {
+                const creator = getCreatorLabel(g).toLowerCase();
+                return (
+                    String(g.title || "").toLowerCase().includes(query) ||
+                    String(g.description || "").toLowerCase().includes(query) ||
+                    creator.includes(query)
+                );
+            });
         }
 
         if (sortMode === "newest") {
@@ -343,7 +390,31 @@
             list.sort((a, b) => Number(a.id) - Number(b.id));
         }
 
-        renderGameCards(allGamesEl, list, "No games in games yet.");
+        renderGameCards(allGamesEl, list, "No games found in games.");
+    }
+
+    async function loadUsernamesForGames(games) {
+        const ids = Array.from(new Set(
+            (games || [])
+                .map(g => g.creator_id)
+                .filter(v => v !== null && v !== undefined && String(v).trim() !== "")
+        ));
+        if (!ids.length || !sb) return;
+
+        try {
+            const { data: users, error } = await sb
+                .from(USERS_TABLE)
+                .select("*");
+            if (!error && Array.isArray(users)) {
+                for (const u of users) {
+                    const label = u.username || u.name || u.display_name;
+                    if (label) {
+                        if (u.id !== undefined && u.id !== null) userNameMap.set(String(u.id), String(label));
+                        if (u.username) userNameMap.set(String(u.username), String(label));
+                    }
+                }
+            }
+        } catch (_e) {}
     }
 
     async function loadGames() {
@@ -353,16 +424,17 @@
         }
 
         const { data: allGames, error } = await sb
-            .from("games")
-            .select("id, title, creator_name, thumbnail_url, place_url")
+            .from(GAMES_TABLE)
+            .select("*")
             .order("id", { ascending: true });
 
         if (error) {
-            allGamesEl.innerHTML = `<div class="nvx-empty-note">Could not load games from games.</div>`;
+            allGamesEl.innerHTML = `<div class="nvx-empty-note">Could not load games from ${escapeHtml(GAMES_TABLE)}: ${escapeHtml(error.message)}</div>`;
             return;
         }
 
-        gamesCache = allGames || [];
+        gamesCache = Array.isArray(allGames) ? allGames : [];
+        await loadUsernamesForGames(gamesCache);
         applyFilterAndSort();
     }
 
@@ -379,6 +451,7 @@
                 logoutBtn.addEventListener("click", function () {
                     clearNovrexCookie();
                     renderSession();
+                    applyFilterAndSort();
                 });
             }
         } else {
