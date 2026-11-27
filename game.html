@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Game - Novrex</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: #e3e5e8;
+  color: #191b1d;
+}
+a { color: #0066cc; text-decoration: none; }
+a:hover { text-decoration: underline; }
+.rbx-header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 44px;
+  background: #ffffff;
+  border-bottom: 1px solid #d5d7da;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 1000;
+}
+.nav-left { display: flex; align-items: center; gap: 20px; }
+.brand { font-weight: 800; font-size: 18px; letter-spacing: 0.5px; color: #191b1d; }
+.nav-links { display: flex; list-style: none; margin: 0; padding: 0; gap: 16px; font-size: 14px; font-weight: 600; }
+.nav-links a { color: #191b1d; }
+.nav-search input {
+  height: 28px;
+  width: 240px;
+  border: 1px solid #b8bcbf;
+  border-radius: 3px;
+  padding: 0 10px;
+  font-size: 13px;
+}
+.container-main {
+  max-width: 970px;
+  margin: 64px auto 40px;
+  padding: 0 12px;
+}
+.section-content {
+  background: #ffffff;
+  padding: 16px;
+  margin-bottom: 14px;
+  border: 1px solid #d5d7da;
+}
+.game-main-content {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.game-thumb-container {
+  flex: 0 0 560px;
+  max-width: 100%;
+}
+.carousel-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #111;
+  overflow: hidden;
+}
+.carousel-stage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  border: none;
+  width: 36px;
+  height: 52px;
+  font-size: 22px;
+  cursor: pointer;
+}
+.carousel-btn.prev { left: 0; }
+.carousel-btn.next { right: 0; }
+.carousel-dots {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  overflow-x: auto;
+}
+.carousel-dots img {
+  width: 76px;
+  height: 44px;
+  object-fit: cover;
+  opacity: 0.6;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+.carousel-dots img.active {
+  opacity: 1;
+  border-color: #00a2ff;
+}
+.game-calls-to-action {
+  flex: 1;
+  min-width: 260px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.game-name {
+  margin: 0 0 6px;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+.game-creator { font-size: 14px; color: #606468; margin-bottom: 16px; }
+.play-box {
+  padding: 18px 0;
+  border-top: 1px solid #e3e5e8;
+  border-bottom: 1px solid #e3e5e8;
+  text-align: center;
+}
+.btn-play-lg {
+  display: inline-block;
+  width: 100%;
+  max-width: 280px;
+  padding: 12px 24px;
+  background: #02b757;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  border-radius: 3px;
+  border: none;
+  cursor: pointer;
+}
+.btn-play-lg:hover { background: #009e49; text-decoration: none; }
+.action-row {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  font-size: 12px;
+  text-align: center;
+}
+.action-row button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #393b3d;
+  font-size: 12px;
+  padding: 4px 6px;
+  border-radius: 3px;
+}
+.action-row button.active-vote {
+  background: #eef6ff;
+  color: #0066cc;
+  font-weight: 700;
+}
+.vote-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.vote-buttons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.vote-bar {
+  height: 6px;
+  background: #e2231a;
+  border-radius: 3px;
+  overflow: hidden;
+  width: 110px;
+}
+.vote-bar-up { height: 100%; background: #02b757; width: 0%; }
+.vote-counts { font-size: 11px; color: #75797e; }
+.rbx-tabs {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-bottom: 1px solid #b8bcbf;
+  background: #f2f4f5;
+}
+.rbx-tabs li button {
+  padding: 10px 22px;
+  background: transparent;
+  border: none;
+  border-right: 1px solid #d5d7da;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  color: #393b3d;
+}
+.rbx-tabs li button.active {
+  background: #ffffff;
+  color: #191b1d;
+  box-shadow: inset 0 3px 0 #00a2ff;
+}
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+.container-header h3 {
+  margin: 0 0 10px;
+  font-size: 18px;
+  font-weight: 700;
+}
+.game-description {
+  white-space: pre-wrap;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0 0 18px;
+  color: #393b3d;
+}
+.game-stats-container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  list-style: none;
+  margin: 0;
+  padding: 14px 0;
+  border-top: 1px solid #e3e5e8;
+  border-bottom: 1px solid #e3e5e8;
+  gap: 12px;
+  text-align: center;
+}
+.stat-label { font-size: 12px; color: #75797e; margin: 0 0 4px; }
+.stat-value { font-size: 15px; font-weight: 700; color: #191b1d; margin: 0; }
+.game-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(142px, 1fr));
+  gap: 12px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.game-card {
+  border: 1px solid #e3e5e8;
+  background: #fff;
+  padding: 6px;
+}
+.game-card img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+}
+.game-card-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 6px 0 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #191b1d;
+}
+.game-card-meta { font-size: 11px; color: #75797e; }
+@media (max-width: 768px) {
+  .game-thumb-container { flex: 1 1 100%; }
+  .game-stats-container { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+<div id="novrex-app"></div>
+<script>
+const SUPABASE_URL = "https://vzkupnfktlyjmhjgzfli.supabase.co";
+const SUPABASE_KEY = "sb_publishable_I0BgbGkSpxoerOsrnVNvhw_w_s7YP6u";
+const STORAGE_BUCKET = "develop-assets";
+const VOTER_STORAGE_KEY = "novrex_voter_key";
+
+document.getElementById("novrex-app").innerHTML = `
+  <header class="rbx-header">
+    <div class="nav-left">
+      <a class="brand" href="/">NOVREX</a>
+      <ul class="nav-links">
+        <li><a href="/games">Games</a></li>
+        <li><a href="/catalog">Catalog</a></li>
+        <li><a href="/develop">Create</a></li>
+      </ul>
+    </div>
+    <div class="nav-search">
+      <input id="navSearchInput" type="search" placeholder="Search games..." />
+    </div>
+  </header>
+  <main class="container-main" id="game-detail-page">
+    <section class="section-content game-main-content">
+      <div class="game-thumb-container">
+        <div class="carousel-stage">
+          <img id="carouselMainImg" src="" alt="Game thumbnail" />
+          <button class="carousel-btn prev" id="prevSlideBtn" aria-label="Previous">&#8249;</button>
+          <button class="carousel-btn next" id="nextSlideBtn" aria-label="Next">&#8250;</button>
+        </div>
+        <div class="carousel-dots" id="carouselThumbs"></div>
+      </div>
+      <div class="game-calls-to-action">
+        <div>
+          <h2 class="game-name" id="gameTitle">Loading...</h2>
+          <div class="game-creator">By <a id="gameCreatorLink" href="#">Creator</a></div>
+        </div>
+        <div class="play-box">
+          <button class="btn-play-lg" id="playGameBtn">Play</button>
+        </div>
+        <ul class="action-row">
+          <li>
+            <button id="favBtn" type="button">★<br /><span id="favLabel">Favorite</span></button>
+          </li>
+          <li>
+            <button id="followBtn" type="button">+<br /><span id="followLabel">Follow</span></button>
+          </li>
+          <li class="vote-box">
+            <div class="vote-buttons">
+              <button id="upvoteBtn" type="button">👍 <span id="upCountText">0</span></button>
+              <button id="downvoteBtn" type="button">👎 <span id="downCountText">0</span></button>
+            </div>
+            <div class="vote-bar"><div class="vote-bar-up" id="voteUpBar"></div></div>
+            <div class="vote-counts"><span id="votePercentText">0%</span> liked</div>
+          </li>
+        </ul>
+      </div>
+    </section>
+    <section class="section-content" style="padding:0;">
+      <ul class="rbx-tabs" role="tablist">
+        <li><button class="tab-btn active" data-tab="about">About</button></li>
+        <li><button class="tab-btn" data-tab="store">Store</button></li>
+        <li><button class="tab-btn" data-tab="servers">Servers</button></li>
+      </ul>
+      <div style="padding:16px;">
+        <div class="tab-panel active" id="tab-about">
+          <div class="container-header"><h3>Description</h3></div>
+          <pre class="game-description" id="gameDescription"></pre>
+          <ul class="game-stats-container">
+            <li><p class="stat-label">Playing</p><p class="stat-value" id="statPlaying">0</p></li>
+            <li><p class="stat-label">Favorites</p><p class="stat-value" id="statFavorites">0</p></li>
+            <li><p class="stat-label">Visits</p><p class="stat-value" id="statVisits">0</p></li>
+            <li><p class="stat-label">Created</p><p class="stat-value" id="statCreated">-</p></li>
+            <li><p class="stat-label">Updated</p><p class="stat-value" id="statUpdated">-</p></li>
+            <li><p class="stat-label">Max Players</p><p class="stat-value" id="statMaxPlayers">0</p></li>
+            <li><p class="stat-label">Genre</p><p class="stat-value" id="statGenre">All</p></li>
+            <li><p class="stat-label">Allowed Gear</p><p class="stat-value" id="statGear">None</p></li>
+          </ul>
+        </div>
+        <div class="tab-panel" id="tab-store">
+          <div class="container-header"><h3>Passes</h3></div>
+          <p id="storeContent">No game passes available for this place.</p>
+        </div>
+        <div class="tab-panel" id="tab-servers">
+          <div class="container-header"><h3>Servers</h3></div>
+          <p id="serversContent">There are currently no running servers.</p>
+        </div>
+      </div>
+    </section>
+    <section class="section-content">
+      <div class="container-header"><h3>Recommended Games</h3></div>
+      <ul class="game-cards" id="recommendedGames"></ul>
+    </section>
+  </main>
+`;
+
+function getVoterKey() {
+  let key = localStorage.getItem(VOTER_STORAGE_KEY);
+  if (!key) {
+    key = "nv_" + Math.random().toString(36).slice(2) + "_" + Date.now().toString(36);
+    localStorage.setItem(VOTER_STORAGE_KEY, key);
+  }
+  return key;
+}
+
+function slugifyGameName(name) {
+  return String(name || "game")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "game";
+}
+
+function getGameRouteParts() {
+  const parts = window.location.pathname.split("/").filter(Boolean);
+  const gamesIdx = parts.findIndex((p) => p.toLowerCase() === "games");
+  const id = gamesIdx !== -1 && parts[gamesIdx + 1] ? decodeURIComponent(parts[gamesIdx + 1]) : "";
+  const slug = gamesIdx !== -1 && parts[gamesIdx + 2] ? decodeURIComponent(parts[gamesIdx + 2]) : "";
+  return { id, slug };
+}
+
+function resolveStorageUrl(val) {
+  if (!val) return "";
+  const str = String(val).trim();
+  if (/^https?:\/\//i.test(str) || str.startsWith("data:") || str.startsWith("blob:")) {
+    return str;
+  }
+  const cleanPath = str.replace(/^\/+/, "");
+  const objectPath = cleanPath.startsWith(`${STORAGE_BUCKET}/`)
+    ? cleanPath.slice(STORAGE_BUCKET.length + 1)
+    : cleanPath;
+  return `${SUPABASE_URL}/storage/v1/object/public/${STORAGE_BUCKET}/${encodeURI(objectPath)}`;
+}
+
+async function fetchGamesFromSupabase() {
+  const endpoint = `${SUPABASE_URL}/rest/v1/games?select=id,creator_id,title,description,thumbnail_url,is_public,created_at,xml&is_public=eq.true&order=id.asc`;
+  const res = await fetch(endpoint, {
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`
+    }
+  });
+  if (!res.ok) return [];
+  const rows = await res.json();
+  return Array.isArray(rows) ? rows : [];
+}
+
+async function fetchVotesForGame(gameId) {
+  const endpoint = `${SUPABASE_URL}/rest/v1/votes?select=voter_key,is_upvote&game_id=eq.${encodeURIComponent(gameId)}`;
+  const res = await fetch(endpoint, {
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`
+    }
+  });
+  if (!res.ok) return [];
+  const rows = await res.json();
+  return Array.isArray(rows) ? rows : [];
+}
+
+async function upsertVote(gameId, voterKey, isUpvote) {
+  const endpoint = `${SUPABASE_URL}/rest/v1/votes?on_conflict=game_id,voter_key`;
+  const res = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+      "Content-Type": "application/json",
+      Prefer: "resolution=merge-duplicates,return=minimal"
+    },
+    body: JSON.stringify([{
+      game_id: Number(gameId),
+      voter_key: voterKey,
+      is_upvote: Boolean(isUpvote)
+    }])
+  });
+  return res.ok;
+}
+
+async function deleteVote(gameId, voterKey) {
+  const endpoint = `${SUPABASE_URL}/rest/v1/votes?game_id=eq.${encodeURIComponent(gameId)}&voter_key=eq.${encodeURIComponent(voterKey)}`;
+  const res = await fetch(endpoint, {
+    method: "DELETE",
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`
+    }
+  });
+  return res.ok;
+}
+
+function renderVotesUI(rows, voterKey) {
+  const upCount = rows.filter((r) => r.is_upvote === true).length;
+  const downCount = rows.filter((r) => r.is_upvote === false).length;
+  const total = upCount + downCount;
+  const pct = total > 0 ? Math.round((upCount / total) * 100) : 0;
+  const mine = rows.find((r) => r.voter_key === voterKey);
+
+  document.getElementById("upCountText").textContent = upCount;
+  document.getElementById("downCountText").textContent = downCount;
+  document.getElementById("votePercentText").textContent = `${pct}%`;
+  document.getElementById("voteUpBar").style.width = `${pct}%`;
+
+  const upBtn = document.getElementById("upvoteBtn");
+  const downBtn = document.getElementById("downvoteBtn");
+  upBtn.classList.toggle("active-vote", Boolean(mine && mine.is_upvote === true));
+  downBtn.classList.toggle("active-vote", Boolean(mine && mine.is_upvote === false));
+}
+
+function setupVoting(gameId) {
+  const voterKey = getVoterKey();
+  const upBtn = document.getElementById("upvoteBtn");
+  const downBtn = document.getElementById("downvoteBtn");
+  let currentRows = [];
+
+  async function refresh() {
+    currentRows = await fetchVotesForGame(gameId);
+    renderVotesUI(currentRows, voterKey);
+  }
+
+  async function handleChoice(wantUpvote) {
+    const mine = currentRows.find((r) => r.voter_key === voterKey);
+    if (mine && mine.is_upvote === wantUpvote) {
+      await deleteVote(gameId, voterKey);
+    } else {
+      await upsertVote(gameId, voterKey, wantUpvote);
+    }
+    await refresh();
+  }
+
+  upBtn.addEventListener("click", () => handleChoice(true));
+  downBtn.addEventListener("click", () => handleChoice(false));
+  refresh();
+}
+
+function renderCarousel(thumbnails) {
+  const imgs = thumbnails && thumbnails.length ? thumbnails : ["https://placehold.co/800x450/1e293b/ffffff?text=Novrex"];
+  let idx = 0;
+  const mainImg = document.getElementById("carouselMainImg");
+  const thumbsWrap = document.getElementById("carouselThumbs");
+
+  function updateSlide(nextIdx) {
+    idx = (nextIdx + imgs.length) % imgs.length;
+    mainImg.src = imgs[idx];
+    Array.from(thumbsWrap.children).forEach((el, i) => {
+      el.classList.toggle("active", i === idx);
+    });
+  }
+
+  thumbsWrap.innerHTML = "";
+  imgs.forEach((src, i) => {
+    const t = document.createElement("img");
+    t.src = src;
+    t.alt = `Thumbnail ${i + 1}`;
+    t.addEventListener("click", () => updateSlide(i));
+    thumbsWrap.appendChild(t);
+  });
+
+  document.getElementById("prevSlideBtn").onclick = () => updateSlide(idx - 1);
+  document.getElementById("nextSlideBtn").onclick = () => updateSlide(idx + 1);
+  updateSlide(0);
+}
+
+function renderRecommended(games, currentId) {
+  const list = document.getElementById("recommendedGames");
+  list.innerHTML = "";
+  games
+    .filter((g) => String(g.id) !== String(currentId))
+    .slice(0, 12)
+    .forEach((g) => {
+      const li = document.createElement("li");
+      li.className = "game-card";
+      const thumb = resolveStorageUrl(g.thumbnail_url) || "https://placehold.co/300x300/1e293b/ffffff?text=Novrex";
+      const url = `/games/${encodeURIComponent(g.id)}/${encodeURIComponent(slugifyGameName(g.title))}`;
+      li.innerHTML = `
+        <a href="${url}">
+          <img src="${thumb}" alt="${g.title || "Game"}" />
+          <div class="game-card-title" title="${g.title || "Game"}">${g.title || "Game"}</div>
+          <div class="game-card-meta">ID: ${g.id}</div>
+        </a>
+      `;
+      list.appendChild(li);
+    });
+}
+
+function initTabs() {
+  const buttons = document.querySelectorAll(".tab-btn");
+  const panels = document.querySelectorAll(".tab-panel");
+  buttons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      buttons.forEach((b) => b.classList.remove("active"));
+      panels.forEach((p) => p.classList.remove("active"));
+      btn.classList.add("active");
+      const target = document.getElementById(`tab-${btn.dataset.tab}`);
+      if (target) target.classList.add("active");
+    });
+  });
+}
+
+(async function boot() {
+  initTabs();
+  const { id, slug } = getGameRouteParts();
+  const games = await fetchGamesFromSupabase();
+
+  let game = null;
+  if (id) {
+    game = games.find((g) => String(g.id) === String(id)) || null;
+  }
+  if (!game && slug) {
+    game = games.find((g) => slugifyGameName(g.title) === slug.toLowerCase()) || null;
+  }
+  if (!game) {
+    game = games[0] || {
+      id: id || 1,
+      creator_id: "Novrex",
+      title: slug ? slug.replace(/-/g, " ") : "Game Not Found",
+      description: "",
+      thumbnail_url: "",
+      created_at: "",
+      xml: ""
+    };
+  }
+
+  const titleText = game.title || "Untitled Game";
+  const canonicalSlug = slugifyGameName(titleText);
+
+  document.title = `${titleText} - Novrex`;
+  document.getElementById("gameTitle").textContent = titleText;
+
+  const creatorLink = document.getElementById("gameCreatorLink");
+  creatorLink.textContent = game.creator_id || "Novrex Creator";
+  creatorLink.href = game.creator_id ? `/users/${encodeURIComponent(game.creator_id)}/profile` : "#";
+
+  document.getElementById("gameDescription").textContent = game.description || "No description provided.";
+  document.getElementById("statCreated").textContent = game.created_at
+    ? new Date(game.created_at).toLocaleDateString()
+    : "-";
+  document.getElementById("statUpdated").textContent = game.created_at
+    ? new Date(game.created_at).toLocaleDateString()
+    : "-";
+
+  const thumbUrl = resolveStorageUrl(game.thumbnail_url);
+  renderCarousel(thumbUrl ? [thumbUrl] : []);
+  renderRecommended(games, game.id);
+  setupVoting(game.id);
+
+  document.getElementById("playGameBtn").addEventListener("click", () => {
+    const placeArg = encodeURIComponent(game.id);
+    const xmlArg = game.xml ? `&xml=${encodeURIComponent(resolveStorageUrl(game.xml))}` : "";
+    window.location.href = `/play?placeId=${placeArg}${xmlArg}`;
+  });
+
+  if (game.id && !slug) {
+    try {
+      window.history.replaceState(
+        null,
+        "",
+        `/games/${encodeURIComponent(game.id)}/${encodeURIComponent(canonicalSlug)}`
+      );
+    } catch (_) {}
+  }
+})();
+</script>
+</body>
+</html>
