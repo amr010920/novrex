@@ -1,1 +1,2 @@
-/games/* /game.html 200
+/games/:id/:slug /game.html 200
+/games/:id /game.html 200
